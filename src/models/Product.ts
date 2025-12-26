@@ -141,4 +141,10 @@ const ProductSchema = new Schema(
   }
 );
 
+ProductSchema.index({ status: 1, createdAt: -1 });
+
+ProductSchema.virtual('primaryImage').get(function () {
+  return this.images?.[0]?.url ?? null;
+});
+
 export default mongoose.models.Product || mongoose.model('Product', ProductSchema);
