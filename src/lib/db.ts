@@ -1,22 +1,28 @@
-import mongoose, { ConnectOptions } from 'mongoose';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
-interface connectedOptions extends ConnectOptions {
-  useNewUrlParser: boolean;
-  useUnifiedTopology: boolean;
+dotenv.config({ path: '.env.local' });
+
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  throw new Error('❌ MONGODB_URI is not defined in .env.local');
 }
 
-const options: connectedOptions = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-};
-
 const connectDB = async () => {
-  const connectionUrl: string = process.env.MONGO_URI as string;
-  mongoose
-    .connect(connectionUrl, options)
-    .then(() => console.log(`Connected to database successfully`))
-    .catch((err) => console.log('Error in connection' + err.message));
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
+
   mongoose.set('strictQuery', false);
+
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log('✅ MongoDB connected');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    throw error;
+  }
 };
 
 export default connectDB;

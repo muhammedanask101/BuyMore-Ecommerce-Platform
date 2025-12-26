@@ -17,7 +17,7 @@ export default async function Home() {
 
   return (
     <main className="p-8 grid grid-cols-3 gap-6">
-      {products.map((p) => (
+      {products.map((p: Product) => (
         <div key={p._id} className="border-2 border-black p-4 shadow-[4px_4px_0_0_#000]">
           <h2 className="font-bold">{p.name}</h2>
           <p>₹{p.price}</p>
