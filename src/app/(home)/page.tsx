@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { ProductListView } from '@/components/custom/Product-List';
 import { ProductSort, ProductSortValue } from '@/components/custom/Product-Sort';
 import { PriceFilter } from '@/components/custom/Filter-Price';
+import { SearchInput, SearchInputSkeleton } from '@/components/custom/Search-Input';
+import { Suspense } from 'react';
 
 export default function Home() {
   const [sort, setSort] = useState<ProductSortValue>('curated');
@@ -12,12 +14,15 @@ export default function Home() {
 
   return (
     <main className="px-4 lg:px-12 py-8">
+      <Suspense fallback={<SearchInputSkeleton />}>
+        <SearchInput />
+      </Suspense>
       <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-8 gap-y-6 gap-x-12">
         <aside className="lg:col-span-2 xl:col-span-2">
-          <div className="sticky top-24 flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <div>
               <p className="text-xl text-yellow-500 font-medium mb-4 mt-10">
-                Sort by editor's choice
+                Sort by editor&apos;s choice
               </p>
               <ProductSort value={sort} onChange={setSort} />
             </div>
