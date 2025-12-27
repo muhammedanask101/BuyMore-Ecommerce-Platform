@@ -14,6 +14,5 @@ export async function POST() {
     signature,
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     apiKey: process.env.CLOUDINARY_API_KEY,
-    uploadPreset: process.env.CLOUDINARY_PRODUCT_UPLOAD_PRESET,
   });
 }

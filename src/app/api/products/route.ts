@@ -44,11 +44,11 @@ export async function GET(req: Request) {
 
   const sort = sortMap[sortParam] ?? sortMap.curated;
 
-  const docs = await Product.aggregate([
+  const results = await Product.aggregate([
     { $match: match },
     { $sort: sort },
     { $skip: skip },
-    { $limit: limit },
+    { $limit: limit + 1 },
 
     {
       $lookup: {
@@ -95,7 +95,8 @@ export async function GET(req: Request) {
     },
   ]);
 
-  const hasNextPage = docs.length === limit;
+  const hasNextPage = results.length > limit;
+  const docs = hasNextPage ? results.slice(0, limit) : results;
 
   return NextResponse.json({
     docs,
