@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import connectDB from '@/lib/db';
 import Media from '@/models/Media';
 import Admin from '@/models/Admin';
+import Product from '@/models/Product';
 
 type OwnerType = 'Product' | 'Page' | 'Category' | 'Banner';
 
@@ -60,6 +61,15 @@ export async function POST(req: Request) {
     );
   }
 
+  let altText: string | undefined;
+
+  if (body.ownerType === 'Product') {
+    const product = await Product.findById(body.ownerId).select('name').lean<{ name?: string }>();
+    if (body.ownerType === 'Product' && product?.name) {
+      altText = `Image of ${product.name}`;
+    }
+  }
+
   const media = await Media.create({
     publicId: body.publicId,
     url: body.url,
@@ -74,6 +84,10 @@ export async function POST(req: Request) {
     ownerId: body.ownerId,
     isPrimary: body.isPrimary ?? false,
     uploadedBy: admin._id,
+    deletedAt: null,
+    seo: {
+      altText,
+    },
   });
 
   return NextResponse.json(media, { status: 201 });

@@ -5,10 +5,14 @@ import Image from 'next/image';
 
 type Product = {
   name: string;
-  slug: string;
+  slug?: string;
   price: number;
   stock: number;
   status: 'draft' | 'active' | 'archived';
+  description?: string;
+  shortDescription?: string;
+  tags?: string[];
+  isFeatured?: boolean;
 };
 
 type Media = {
@@ -22,12 +26,11 @@ export default function EditProductClient({ id }: { id: string }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const fileRef = useRef<HTMLInputElement | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   /* ===========================
      FETCH PRODUCT + MEDIA
   ============================ */
-
   useEffect(() => {
     if (!id) return;
 
@@ -58,9 +61,8 @@ export default function EditProductClient({ id }: { id: string }) {
   }, [id]);
 
   /* ===========================
-     SAVE PRODUCT DETAILS
+     SAVE PRODUCT
   ============================ */
-
   async function handleSave(e: FormEvent) {
     e.preventDefault();
     if (!product) return;
@@ -70,7 +72,10 @@ export default function EditProductClient({ id }: { id: string }) {
     await fetch(`/api/admin/products/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(product),
+      body: JSON.stringify({
+        ...product,
+        tags: product.tags?.filter(Boolean),
+      }),
     });
 
     setSaving(false);
@@ -80,7 +85,6 @@ export default function EditProductClient({ id }: { id: string }) {
   /* ===========================
      DELETE MEDIA
   ============================ */
-
   async function handleDelete(mediaId: string) {
     if (!confirm('Delete this image?')) return;
 
@@ -89,7 +93,7 @@ export default function EditProductClient({ id }: { id: string }) {
     });
 
     if (!res.ok) {
-      alert('Failed to delete');
+      alert('Delete failed');
       return;
     }
 
@@ -99,8 +103,13 @@ export default function EditProductClient({ id }: { id: string }) {
   /* ===========================
      UPLOAD MEDIA
   ============================ */
+  async function handleUpload() {
+    const file = fileRef.current?.files?.[0];
+    if (!file) {
+      alert('Choose a file first');
+      return;
+    }
 
-  async function handleUpload(file: File) {
     setUploading(true);
 
     try {
@@ -128,15 +137,12 @@ export default function EditProductClient({ id }: { id: string }) {
         body: JSON.stringify({
           publicId: uploaded.public_id,
           url: uploaded.secure_url,
-
           resourceType: uploaded.resource_type,
           format: uploaded.format,
           mimeType: `image/${uploaded.format}`,
-
           size: uploaded.bytes,
           width: uploaded.width,
           height: uploaded.height,
-
           ownerType: 'Product',
           ownerId: id,
           isPrimary: media.length === 0,
@@ -151,11 +157,7 @@ export default function EditProductClient({ id }: { id: string }) {
       setMedia(refreshed);
     } finally {
       setUploading(false);
-
-      // ✅ Clear file input safely
-      if (fileRef.current) {
-        fileRef.current.value = '';
-      }
+      if (fileRef.current) fileRef.current.value = '';
     }
   }
 
@@ -164,7 +166,6 @@ export default function EditProductClient({ id }: { id: string }) {
   /* ===========================
      RENDER
   ============================ */
-
   return (
     <div className="space-y-10">
       {/* PRODUCT FORM */}
@@ -183,10 +184,45 @@ export default function EditProductClient({ id }: { id: string }) {
 
         <input
           className="border-2 border-black px-3 py-2 w-full"
-          value={product.slug}
+          value={product.slug || ''}
           onChange={(e) => setProduct({ ...product, slug: e.target.value })}
-          placeholder="Slug"
+          placeholder="Slug (auto if empty)"
         />
+
+        <textarea
+          className="border-2 border-black px-3 py-2 w-full min-h-[120px]"
+          value={product.description || ''}
+          onChange={(e) => setProduct({ ...product, description: e.target.value })}
+          placeholder="Description"
+        />
+
+        <input
+          className="border-2 border-black px-3 py-2 w-full"
+          value={product.shortDescription || ''}
+          onChange={(e) => setProduct({ ...product, shortDescription: e.target.value })}
+          placeholder="Short description (auto if empty)"
+        />
+
+        <input
+          className="border-2 border-black px-3 py-2 w-full"
+          value={product.tags?.join(', ') || ''}
+          onChange={(e) =>
+            setProduct({
+              ...product,
+              tags: e.target.value.split(',').map((t) => t.trim()),
+            })
+          }
+          placeholder="Tags (comma separated)"
+        />
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={!!product.isFeatured}
+            onChange={(e) => setProduct({ ...product, isFeatured: e.target.checked })}
+          />
+          Featured product
+        </label>
 
         <div className="grid grid-cols-2 gap-4">
           <input
@@ -231,19 +267,11 @@ export default function EditProductClient({ id }: { id: string }) {
         <h2 className="text-xl font-extrabold">Media</h2>
 
         <div className="border-4 border-black bg-white p-4 space-y-3">
-          <input ref={fileRef} type="file" accept="image/*" disabled={uploading} />
-
+          <input ref={fileRef} type="file" accept="image/*" />
           <button
             type="button"
             disabled={uploading}
-            onClick={() => {
-              const file = fileRef.current?.files?.[0];
-              if (!file) {
-                alert('Please choose a file first');
-                return;
-              }
-              handleUpload(file);
-            }}
+            onClick={handleUpload}
             className="border-2 border-black bg-black text-white px-4 py-2"
           >
             {uploading ? 'Uploading…' : 'Upload Image'}
@@ -260,17 +288,9 @@ export default function EditProductClient({ id }: { id: string }) {
                 height={300}
                 className="object-cover aspect-square"
               />
-
               <button
                 onClick={() => handleDelete(m._id)}
-                className="
-                  absolute top-1 right-1
-                  border-2 border-black
-                  bg-white
-                  px-2 py-1
-                  text-xs font-bold
-                  hover:bg-black hover:text-white
-                "
+                className="absolute top-1 right-1 border-2 border-black bg-white px-2 py-1 text-xs font-bold hover:bg-black hover:text-white"
               >
                 ✕
               </button>
