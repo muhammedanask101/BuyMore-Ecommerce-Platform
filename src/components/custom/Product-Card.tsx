@@ -10,52 +10,49 @@ interface Props {
 }
 
 export const ProductCard = ({ product }: Props) => {
-  const { slug, name, price, images, rating } = product;
-
-  const imageUrl = images?.[0]?.url ?? null;
-
-  const authorUsername = 'Kapithan';
-  const authorImageUrl = null;
+  const { slug, name, price, primaryImage, primaryImageAlt, rating } = product;
 
   const reviewRating = rating?.average ?? 0;
   const reviewCount = rating?.count ?? 0;
 
   return (
-    <Link href={`/products/${slug}`}>
-      <div className="hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border rounded-md bg-white overflow-hidden h-full flex flex-col">
-        <div className="relative aspect-square">
-          <Image alt={name} fill src={imageUrl || '/public/vercel.svg'} className="object-cover" />
+    <Link href={`/products/${slug}`} className="h-full">
+      <div className="h-full flex flex-col border-2 border-black bg-white overflow-hidden transition-shadow hover:shadow-[4px_4px_0_0_#000]">
+        {/* Image */}
+        <div className="relative aspect-square bg-neutral-100">
+          <Image
+            src={primaryImage || '/placeholder.png'}
+            alt={primaryImageAlt || name}
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+            className="object-cover"
+            priority={false}
+          />
         </div>
-        <div className="p-4 border-y flex flex-col gap-3 flex-1">
-          <h2 className="text-lg font-medium line-clamp-4 ">{name}</h2>
-          <div className="flex items-center gap-2" onClick={() => {}}>
-            {authorImageUrl && (
-              <Image
-                alt={authorUsername}
-                src={authorImageUrl}
-                width={16}
-                height={16}
-                className="rounded-full border shrink-0 size-[16px]"
-              />
-            )}
-          </div>
+
+        {/* Content */}
+        <div className="flex flex-col gap-3 p-4 border-t-2 border-black flex-1">
+          <h2 className="text-lg font-medium leading-snug line-clamp-3">{name}</h2>
+
           {reviewCount > 0 && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 text-sm font-medium">
               <StarIcon className="size-3.5 fill-black" />
-              <p className="text-sm font-medium">
+              <span>
                 {reviewRating} ({reviewCount})
-              </p>
+              </span>
             </div>
           )}
         </div>
-        <div className="p-4">
-          <div className="relative px-2 py-1 border bg-pink-400 w-fit">
+
+        {/* Price */}
+        <div className="p-4 border-t-2 border-black">
+          <div className="inline-block px-2 py-1 border-2 border-black bg-pink-400">
             <p className="text-sm font-medium">
-              {new Intl.NumberFormat('en-US', {
+              {new Intl.NumberFormat('en-IN', {
                 style: 'currency',
                 currency: 'INR',
                 maximumFractionDigits: 0,
-              }).format(Number(price))}
+              }).format(price)}
             </p>
           </div>
         </div>
@@ -65,5 +62,16 @@ export const ProductCard = ({ product }: Props) => {
 };
 
 export const ProductCardSkeleton = () => {
-  return <div className="w-full aspect-3/4 bg-neutral-200 rounded-lg animate-pulse" />;
+  return (
+    <div className="h-full border-2 border-black bg-neutral-200 animate-pulse">
+      <div className="aspect-square bg-neutral-300" />
+      <div className="p-4 space-y-3">
+        <div className="h-4 bg-neutral-300 w-3/4" />
+        <div className="h-3 bg-neutral-300 w-1/2" />
+      </div>
+      <div className="p-4">
+        <div className="h-6 bg-neutral-300 w-20" />
+      </div>
+    </div>
+  );
 };

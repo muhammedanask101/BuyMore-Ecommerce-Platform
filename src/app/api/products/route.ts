@@ -22,21 +22,19 @@ export async function GET(req: Request) {
 
   const page = Number(searchParams.get('page') || 1);
   const limit = Number(searchParams.get('limit') || 8);
-
   const skip = (page - 1) * limit;
 
   const sortParam = (searchParams.get('sort') as SortKey) || 'curated';
-
   const minPrice = searchParams.get('minPrice');
   const maxPrice = searchParams.get('maxPrice');
 
-  const query: ProductQuery = {
+  const match: ProductQuery = {
     status: 'active',
     deletedAt: null,
   };
 
-  if (minPrice) query.price = { ...query.price, $gte: Number(minPrice) };
-  if (maxPrice) query.price = { ...query.price, $lte: Number(maxPrice) };
+  if (minPrice) match.price = { ...match.price, $gte: Number(minPrice) };
+  if (maxPrice) match.price = { ...match.price, $lte: Number(maxPrice) };
 
   const sortMap: Record<SortKey, Record<string, 1 | -1>> = {
     curated: { isFeatured: -1, createdAt: -1 },
@@ -46,7 +44,56 @@ export async function GET(req: Request) {
 
   const sort = sortMap[sortParam] ?? sortMap.curated;
 
-  const docs = await Product.find(query).sort(sort).skip(skip).limit(limit);
+  const docs = await Product.aggregate([
+    { $match: match },
+    { $sort: sort },
+    { $skip: skip },
+    { $limit: limit },
+
+    {
+      $lookup: {
+        from: 'media',
+        let: { productId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$ownerType', 'Product'] },
+                  { $eq: ['$ownerId', '$$productId'] },
+                  { $eq: ['$isPrimary', true] },
+                  { $eq: ['$deletedAt', null] },
+                ],
+              },
+            },
+          },
+          {
+            $project: {
+              url: 1,
+              'seo.altText': 1,
+            },
+          },
+          { $limit: 1 },
+        ],
+        as: 'primaryMedia',
+      },
+    },
+
+    {
+      $addFields: {
+        primaryImage: { $arrayElemAt: ['$primaryMedia.url', 0] },
+        primaryImageAlt: {
+          $arrayElemAt: ['$primaryMedia.seo.altText', 0],
+        },
+      },
+    },
+
+    {
+      $project: {
+        primaryMedia: 0,
+      },
+    },
+  ]);
 
   const hasNextPage = docs.length === limit;
 

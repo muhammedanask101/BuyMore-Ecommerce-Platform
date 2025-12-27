@@ -26,12 +26,13 @@ export type Product = {
   trackInventory: boolean;
   description?: string;
   shortDescription?: string;
-  images: ProductImage[];
   categories?: string[];
   tags?: string[];
   rating: ProductRating;
   status: ProductStatus;
   isFeatured: boolean;
+  primaryImage?: string | null;
+  primaryImageAlt?: string | null;
   seo?: ProductSEO;
   createdAt: string;
   updatedAt: string;

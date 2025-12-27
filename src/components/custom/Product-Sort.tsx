@@ -43,10 +43,8 @@ const SortButton = ({
       variant="secondary"
       onClick={onClick}
       className={cn(
-        'rounded-full border-2 border-black px-4 font-medium transition-none',
-        'shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]',
-        'hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none',
-        active ? 'bg-white' : 'bg-transparent border-t hover:bg-white'
+        'rounded-full border-2 border-black px-4 font-medium transition-none hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-px hover:-translate-y-px shadow-none',
+        active ? 'bg-yellow-400 hover:bg-yellow-400' : 'bg-white border-t hover:bg-white'
       )}
     >
       {children}
