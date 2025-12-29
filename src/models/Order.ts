@@ -128,6 +128,23 @@ const OrderSchema = new Schema(
       type: String,
       index: true,
     },
+    cancelReason: {
+      type: String,
+    },
+    /* ===== COD Protection ===== */
+
+    codVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    codOtp: {
+      type: String,
+    },
+
+    codOtpExpiresAt: {
+      type: Date,
+    },
 
     /* ===== Shipping ===== */
 

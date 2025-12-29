@@ -9,9 +9,32 @@ export type OrderItemDTO = {
 };
 
 export type OrderDTO = {
-  _id: Types.ObjectId;
-  items: OrderItemDTO[];
+  _id: string;
+
+  guestId?: string | null;
+  userId?: string | null;
+
+  items: {
+    productId: string;
+    name: string;
+    price: number;
+    quantity: number;
+    size?: 'XS' | 'S' | 'M' | 'L' | 'XL';
+  }[];
+
+  subtotal: number;
+  tax: number;
+  shipping: number;
   total: number;
-  status: string;
-  guestId?: string;
+  currency: string;
+
+  status: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+
+  paymentProvider?: 'razorpay' | 'cod' | null;
+
+  /* ===== COD ===== */
+  codVerified?: boolean;
+
+  createdAt: string;
+  updatedAt: string;
 };

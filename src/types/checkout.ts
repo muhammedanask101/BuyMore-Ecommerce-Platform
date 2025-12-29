@@ -7,6 +7,7 @@ export type CheckoutItem = {
 export type ShippingAddress = {
   name: string;
   phone: string;
+  email: string;
   addressLine1: string;
   addressLine2?: string;
   city: string;

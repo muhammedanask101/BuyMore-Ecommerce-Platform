@@ -5,12 +5,35 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/db';
 import Product from '@/models/Product';
 import Order from '@/models/Order';
+import { sendOrderConfirmationEmail } from '@/lib/email/sendOrderConfirmation';
+import { sendInvoiceEmail } from '@/lib/email/sendInvoiceEmail';
+import { sendSms } from '@/lib/sms/sendSms';
+
+/* ===========================
+   TYPES
+=========================== */
 
 type OrderItemInput = {
   productId: string;
   size?: 'XS' | 'S' | 'M' | 'L' | 'XL';
   quantity: number;
 };
+
+/* ===========================
+   COD OTP HELPERS
+=========================== */
+
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function hashOtp(otp: string) {
+  return crypto.createHash('sha256').update(otp).digest('hex');
+}
+
+/* ===========================
+   CREATE ORDER
+=========================== */
 
 export async function POST(req: Request) {
   await connectDB();
@@ -23,7 +46,15 @@ export async function POST(req: Request) {
 
     const items: OrderItemInput[] = body.items;
     const shippingAddress = body.shippingAddress;
-    const paymentProvider = body.paymentProvider ?? null;
+    const paymentProvider: 'razorpay' | 'cod' | null = body.paymentProvider ?? null;
+
+    /* ===========================
+       VALIDATION
+    =========================== */
+
+    if (paymentProvider !== 'razorpay' && paymentProvider !== 'cod') {
+      throw new Error('Invalid payment provider');
+    }
 
     if (!Array.isArray(items) || items.length === 0) {
       throw new Error('Order must contain items');
@@ -55,6 +86,55 @@ export async function POST(req: Request) {
         secure: process.env.NODE_ENV === 'production',
         maxAge: 60 * 60 * 24 * 365, // 1 year
       });
+    }
+
+    /* ===========================
+       COD FRAUD PROTECTION
+    =========================== */
+
+    let codFields: {
+      codVerified?: boolean;
+      codOtp?: string;
+      codOtpExpiresAt?: Date;
+    } = {};
+
+    if (paymentProvider === 'cod') {
+      // Limit: max 2 COD orders per 7 days
+      const recentCodCount = await Order.countDocuments({
+        guestId,
+        paymentProvider: 'cod',
+        createdAt: {
+          $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        },
+      }).session(session);
+
+      if (recentCodCount >= 2) {
+        throw new Error('COD limit exceeded. Please pay online.');
+      }
+
+      // Only one unverified COD at a time
+      const activeUnverified = await Order.findOne({
+        guestId,
+        paymentProvider: 'cod',
+        codVerified: false,
+      }).session(session);
+
+      if (activeUnverified) {
+        throw new Error('Please verify previous COD order first.');
+      }
+
+      const otp = generateOtp();
+
+      codFields = {
+        codVerified: false,
+        codOtp: hashOtp(otp),
+        codOtpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+      };
+
+      await sendSms(shippingAddress.phone, `Your Kapithan COD OTP is ${otp}`);
+
+      // DEV ONLY — replace with SMS gateway later
+      console.log('COD OTP (dev only):', otp);
     }
 
     /* ===========================
@@ -98,8 +178,7 @@ export async function POST(req: Request) {
         throw new Error('Product out of stock');
       }
 
-      const lineTotal = product.price * item.quantity;
-      subtotal += lineTotal;
+      subtotal += product.price * item.quantity;
 
       orderItems.push({
         productId: product._id,
@@ -121,24 +200,33 @@ export async function POST(req: Request) {
     const order = await Order.create(
       [
         {
-          userId: null, // still future-proof
-          guestId, // 🔑 guest ownership
+          userId: null,
+          guestId,
           items: orderItems,
           subtotal,
           tax,
           shipping,
           total,
           currency: 'INR',
-          status: 'pending',
+
+          status: paymentProvider === 'cod' ? 'processing' : 'pending',
           paymentProvider,
+
           shippingAddress: {
             ...shippingAddress,
             country: shippingAddress.country ?? 'India',
           },
+
+          ...codFields, // 🔑 COD OTP + verification fields
         },
       ],
       { session }
     );
+
+    const orderDoc = order[0].toObject();
+
+    await sendOrderConfirmationEmail(orderDoc, shippingAddress.email);
+    await sendInvoiceEmail(orderDoc, shippingAddress.email);
 
     await session.commitTransaction();
     session.endSession();

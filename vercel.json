@@ -1,0 +1,11 @@
+{
+  "crons": [
+    {
+      "path": "/api/internal/rollback-cod",
+      "schedule": "0 */1 * * *",
+      "headers": {
+        "authorization": "Bearer ${CRON_SECRET}"
+      }
+    }
+  ]
+}

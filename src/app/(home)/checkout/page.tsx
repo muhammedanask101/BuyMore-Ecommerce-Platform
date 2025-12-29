@@ -8,12 +8,22 @@ import type { ShippingAddress } from '@/types/checkout';
 
 export default function CheckoutPage() {
   const router = useRouter();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /* ===========================
+     PAYMENT METHOD
+  ============================ */
+  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay');
+
+  /* ===========================
+     SHIPPING ADDRESS
+  ============================ */
   const [address, setAddress] = useState<ShippingAddress>({
     name: '',
     phone: '',
+    email: '',
     addressLine1: '',
     addressLine2: '',
     city: '',
@@ -26,6 +36,9 @@ export default function CheckoutPage() {
     setAddress((prev) => ({ ...prev, [field]: value }));
   }
 
+  /* ===========================
+     PLACE ORDER
+  ============================ */
   async function handlePlaceOrder() {
     setLoading(true);
     setError(null);
@@ -37,16 +50,29 @@ export default function CheckoutPage() {
         throw new Error('Cart is empty');
       }
 
+      if (
+        !address.name ||
+        !address.phone ||
+        !address.addressLine1 ||
+        !address.city ||
+        !address.state ||
+        !address.postalCode
+      ) {
+        throw new Error('Please fill all required address fields');
+      }
+
+      // ✅ SINGLE source of truth for order creation
       const order = await createOrder({
         items: cart.items.map((i) => ({
           productId: i.productId,
           quantity: i.quantity,
+          size: i.size,
         })),
         shippingAddress: address,
-        paymentProvider: 'razorpay',
+        paymentProvider: paymentMethod,
       });
 
-      // Redirect to confirmation (payment comes next)
+      // ✅ Redirect to order confirmation
       router.push(`/order/${order.orderId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Checkout failed');
@@ -56,11 +82,14 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-6">Checkout</h1>
+    <main className="max-w-3xl mx-auto p-6 space-y-8">
+      <h1 className="text-2xl font-semibold">Checkout</h1>
 
-      {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
+      {/* ===========================
+         SHIPPING ADDRESS
+      ============================ */}
       <div className="space-y-4">
         <input
           placeholder="Full name"
@@ -114,12 +143,51 @@ export default function CheckoutPage() {
         />
       </div>
 
+      {/* ===========================
+         PAYMENT METHOD
+      ============================ */}
+      <div className="border rounded-lg p-4 space-y-2">
+        <p className="font-medium">Payment Method</p>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="radio"
+            name="payment"
+            checked={paymentMethod === 'razorpay'}
+            onChange={() => setPaymentMethod('razorpay')}
+          />
+          Pay Online (UPI / Card)
+        </label>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="radio"
+            name="payment"
+            checked={paymentMethod === 'cod'}
+            onChange={() => setPaymentMethod('cod')}
+          />
+          Cash on Delivery
+        </label>
+      </div>
+
+      {/* ===========================
+         PLACE ORDER
+      ============================ */}
       <button
         onClick={handlePlaceOrder}
         disabled={loading}
-        className="mt-8 w-full bg-black text-white py-3 rounded-lg disabled:opacity-50"
+        className="
+          w-full bg-black text-white
+          py-3 rounded-lg
+          font-medium
+          disabled:opacity-50
+        "
       >
-        {loading ? 'Placing order…' : 'Place order'}
+        {loading
+          ? 'Placing order…'
+          : paymentMethod === 'cod'
+            ? 'Place COD Order'
+            : 'Proceed to Payment'}
       </button>
     </main>
   );
