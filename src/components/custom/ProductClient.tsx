@@ -3,11 +3,14 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import type { ProductPageDTO, SizeOption } from '@/types/product-page';
+import { addToCart } from '@/lib/cart-actions';
+import { useToast } from '@/components/custom/ToastProvider';
 
 export default function ProductClient({ product }: { product: ProductPageDTO }) {
   const images = product.media ?? [];
   const [activeImage, setActiveImage] = useState(images[0]);
   const [selectedSize, setSelectedSize] = useState<SizeOption | null>(null);
+  const { showAddedToCart } = useToast();
 
   const sizes: SizeOption[] = product.sizes ?? [
     { size: 'S', width: 38, length: 26, height: 16 },
@@ -130,9 +133,21 @@ export default function ProductClient({ product }: { product: ProductPageDTO }) 
 
             <button
               disabled={!selectedSize || product.stock === 0}
-              className="w-full border-4 border-black bg-black text-white py-4 text-lg font-black uppercase disabled:opacity-40"
+              onClick={() => {
+                if (!selectedSize) return;
+
+                addToCart(product._id, 1, selectedSize.size);
+                showAddedToCart();
+              }}
+              className="
+    w-full border-4 border-black bg-black text-white
+    py-4 text-lg font-black uppercase
+    hover:bg-pink-400 hover:text-black
+    transition
+    disabled:opacity-40 disabled:cursor-not-allowed
+  "
             >
-              Add to Cart
+              {product.stock === 0 ? 'Out of Stock' : !selectedSize ? 'Select Size' : 'Add to Cart'}
             </button>
           </div>
         </aside>

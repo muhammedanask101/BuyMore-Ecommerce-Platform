@@ -9,9 +9,9 @@ export type MediaDTO = {
 
 export type SizeOption = {
   size: 'XS' | 'S' | 'M' | 'L' | 'XL';
-  chest: number;
+  width: number;
   length: number;
-  shoulder: number;
+  height: number;
 };
 
 export type ProductPageDTO = {

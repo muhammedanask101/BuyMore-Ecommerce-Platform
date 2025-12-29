@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { NavbarSidebar } from './Navbar-Sidebar';
 import { useState } from 'react';
 import { MenuIcon } from 'lucide-react';
+import { CartIcon } from '@/components/custom/CartIcon';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -63,6 +64,7 @@ export const Navbar = () => {
             {item.children}
           </NavbarItem>
         ))}
+        <CartIcon />
       </div>
 
       {/* {session.data?.user ? (
@@ -96,7 +98,9 @@ export const Navbar = () => {
         </div>
       )} */}
 
-      <div className="flex lg:hidden items-center justify-center">
+      <div className="flex lg:hidden items-center gap-2 pr-2">
+        <CartIcon />
+
         <Button
           variant="ghost"
           className="size-12 border-transparent bg-white"
