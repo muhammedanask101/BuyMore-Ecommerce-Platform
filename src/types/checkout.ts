@@ -7,7 +7,6 @@ export type CheckoutItem = {
 export type ShippingAddress = {
   name: string;
   phone: string;
-  email: string;
   addressLine1: string;
   addressLine2?: string;
   city: string;
@@ -17,13 +16,22 @@ export type ShippingAddress = {
 };
 
 export type CreateOrderRequest = {
+  email: string;
   items: CheckoutItem[];
   shippingAddress: ShippingAddress;
-  paymentProvider?: 'stripe' | 'razorpay' | 'cod';
+  paymentProvider?: 'razorpay' | 'cod';
 };
 
 export type CreateOrderResponse = {
   orderId: string;
+  guestId: string;
+
   total: number;
   currency: string;
+
+  paymentOrder?: {
+    id: string;
+    amount: number;
+    currency: string;
+  };
 };

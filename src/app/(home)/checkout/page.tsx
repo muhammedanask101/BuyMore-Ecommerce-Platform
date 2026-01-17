@@ -5,12 +5,18 @@ import { useRouter } from 'next/navigation';
 import { getCart } from '@/lib/cart';
 import { createOrder } from '@/lib/checkout';
 import type { ShippingAddress } from '@/types/checkout';
+import { setCookie } from 'cookies-next';
 
 export default function CheckoutPage() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /* ===========================
+     EMAIL (ORDER IDENTITY)
+  ============================ */
+  const [email, setEmail] = useState('');
 
   /* ===========================
      PAYMENT METHOD
@@ -23,7 +29,6 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState<ShippingAddress>({
     name: '',
     phone: '',
-    email: '',
     addressLine1: '',
     addressLine2: '',
     city: '',
@@ -46,6 +51,10 @@ export default function CheckoutPage() {
     try {
       const cart = getCart();
 
+      if (!email) {
+        throw new Error('Email is required');
+      }
+
       if (cart.items.length === 0) {
         throw new Error('Cart is empty');
       }
@@ -61,8 +70,8 @@ export default function CheckoutPage() {
         throw new Error('Please fill all required address fields');
       }
 
-      // ✅ SINGLE source of truth for order creation
       const order = await createOrder({
+        email, // ✅ REQUIRED & NOW PRESENT
         items: cart.items.map((i) => ({
           productId: i.productId,
           quantity: i.quantity,
@@ -72,7 +81,11 @@ export default function CheckoutPage() {
         paymentProvider: paymentMethod,
       });
 
-      // ✅ Redirect to order confirmation
+      setCookie('guest_id', order.guestId, {
+        maxAge: 60 * 60 * 24 * 7,
+        path: '/',
+      });
+
       router.push(`/order/${order.orderId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Checkout failed');
@@ -86,6 +99,18 @@ export default function CheckoutPage() {
       <h1 className="text-2xl font-semibold">Checkout</h1>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {/* ===========================
+         EMAIL
+      ============================ */}
+      <input
+        type="email"
+        placeholder="Email address"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full border rounded px-3 py-2"
+        required
+      />
 
       {/* ===========================
          SHIPPING ADDRESS
@@ -152,7 +177,6 @@ export default function CheckoutPage() {
         <label className="flex items-center gap-2">
           <input
             type="radio"
-            name="payment"
             checked={paymentMethod === 'razorpay'}
             onChange={() => setPaymentMethod('razorpay')}
           />
@@ -162,7 +186,6 @@ export default function CheckoutPage() {
         <label className="flex items-center gap-2">
           <input
             type="radio"
-            name="payment"
             checked={paymentMethod === 'cod'}
             onChange={() => setPaymentMethod('cod')}
           />
@@ -176,12 +199,7 @@ export default function CheckoutPage() {
       <button
         onClick={handlePlaceOrder}
         disabled={loading}
-        className="
-          w-full bg-black text-white
-          py-3 rounded-lg
-          font-medium
-          disabled:opacity-50
-        "
+        className="w-full bg-black text-white py-3 rounded-lg font-medium disabled:opacity-50"
       >
         {loading
           ? 'Placing order…'

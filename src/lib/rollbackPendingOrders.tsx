@@ -15,7 +15,7 @@ export async function rollbackExpiredPendingOrders() {
     const expiryDate = new Date(Date.now() - PAYMENT_TIMEOUT_MINUTES * 60 * 1000);
 
     const expiredOrders = await Order.find({
-      status: 'pending',
+      status: 'pending_payment',
       paidAt: null, // 🔒 extra safety
       createdAt: { $lt: expiryDate },
     }).session(session);

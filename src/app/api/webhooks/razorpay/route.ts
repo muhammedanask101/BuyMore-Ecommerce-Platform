@@ -58,8 +58,8 @@ export async function POST(req: Request) {
       paymentIntentId: payment.order_id,
     });
 
-    if (order && order.status === 'pending') {
-      order.status = 'pending'; // keep pending, allow retry
+    if (order && order.status === 'pending_payment') {
+      order.status = 'pending_payment'; // keep pending, allow retry
       await order.save();
     }
   }

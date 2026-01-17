@@ -5,9 +5,6 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/db';
 import Product from '@/models/Product';
 import Order from '@/models/Order';
-import { sendOrderConfirmationEmail } from '@/lib/email/sendOrderConfirmation';
-import { sendInvoiceEmail } from '@/lib/email/sendInvoiceEmail';
-import { sendSms } from '@/lib/sms/sendSms';
 
 /* ===========================
    TYPES
@@ -20,19 +17,7 @@ type OrderItemInput = {
 };
 
 /* ===========================
-   COD OTP HELPERS
-=========================== */
-
-function generateOtp() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-function hashOtp(otp: string) {
-  return crypto.createHash('sha256').update(otp).digest('hex');
-}
-
-/* ===========================
-   CREATE ORDER
+   CREATE ORDER (FINAL)
 =========================== */
 
 export async function POST(req: Request) {
@@ -46,13 +31,13 @@ export async function POST(req: Request) {
 
     const items: OrderItemInput[] = body.items;
     const shippingAddress = body.shippingAddress;
-    const paymentProvider: 'razorpay' | 'cod' | null = body.paymentProvider ?? null;
+    const paymentProvider: 'razorpay' | 'cod' = body.paymentProvider;
 
     /* ===========================
        VALIDATION
     =========================== */
 
-    if (paymentProvider !== 'razorpay' && paymentProvider !== 'cod') {
+    if (!['razorpay', 'cod'].includes(paymentProvider)) {
       throw new Error('Invalid payment provider');
     }
 
@@ -89,56 +74,7 @@ export async function POST(req: Request) {
     }
 
     /* ===========================
-       COD FRAUD PROTECTION
-    =========================== */
-
-    let codFields: {
-      codVerified?: boolean;
-      codOtp?: string;
-      codOtpExpiresAt?: Date;
-    } = {};
-
-    if (paymentProvider === 'cod') {
-      // Limit: max 2 COD orders per 7 days
-      const recentCodCount = await Order.countDocuments({
-        guestId,
-        paymentProvider: 'cod',
-        createdAt: {
-          $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        },
-      }).session(session);
-
-      if (recentCodCount >= 2) {
-        throw new Error('COD limit exceeded. Please pay online.');
-      }
-
-      // Only one unverified COD at a time
-      const activeUnverified = await Order.findOne({
-        guestId,
-        paymentProvider: 'cod',
-        codVerified: false,
-      }).session(session);
-
-      if (activeUnverified) {
-        throw new Error('Please verify previous COD order first.');
-      }
-
-      const otp = generateOtp();
-
-      codFields = {
-        codVerified: false,
-        codOtp: hashOtp(otp),
-        codOtpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
-      };
-
-      await sendSms(shippingAddress.phone, `Your Kapithan COD OTP is ${otp}`);
-
-      // DEV ONLY — replace with SMS gateway later
-      console.log('COD OTP (dev only):', otp);
-    }
-
-    /* ===========================
-       BUILD ORDER ITEMS
+       BUILD ORDER ITEMS + LOCK STOCK
     =========================== */
 
     let subtotal = 0;
@@ -151,15 +87,6 @@ export async function POST(req: Request) {
     }[] = [];
 
     for (const item of items) {
-      if (
-        !mongoose.Types.ObjectId.isValid(item.productId) ||
-        typeof item.quantity !== 'number' ||
-        item.quantity <= 0
-      ) {
-        throw new Error('Invalid cart item');
-      }
-
-      // 🔒 ATOMIC STOCK CHECK + DECREMENT
       const product = await Product.findOneAndUpdate(
         {
           _id: item.productId,
@@ -183,7 +110,7 @@ export async function POST(req: Request) {
       orderItems.push({
         productId: product._id,
         name: product.name,
-        price: product.price, // immutable snapshot
+        price: product.price,
         size: item.size,
         quantity: item.quantity,
       });
@@ -197,11 +124,18 @@ export async function POST(req: Request) {
        CREATE ORDER
     =========================== */
 
-    const order = await Order.create(
+    const [order] = await Order.create(
       [
         {
           userId: null,
           guestId,
+
+          /* ===== Contact (India-first) ===== */
+          contact: {
+            phone: shippingAddress.phone,
+            email: shippingAddress.email, // optional
+          },
+
           items: orderItems,
           subtotal,
           tax,
@@ -209,30 +143,23 @@ export async function POST(req: Request) {
           total,
           currency: 'INR',
 
-          status: paymentProvider === 'cod' ? 'processing' : 'pending',
+          status: paymentProvider === 'cod' ? 'processing' : 'pending_payment',
           paymentProvider,
 
           shippingAddress: {
             ...shippingAddress,
             country: shippingAddress.country ?? 'India',
           },
-
-          ...codFields, // 🔑 COD OTP + verification fields
         },
       ],
       { session }
     );
 
-    const orderDoc = order[0].toObject();
-
-    await sendOrderConfirmationEmail(orderDoc, shippingAddress.email);
-    await sendInvoiceEmail(orderDoc, shippingAddress.email);
-
     await session.commitTransaction();
     session.endSession();
 
     return NextResponse.json({
-      orderId: order[0]._id.toString(),
+      orderId: order._id.toString(),
       total,
       currency: 'INR',
     });
@@ -242,7 +169,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : 'Failed to create order',
+        error: error instanceof Error ? error.message : 'Order creation failed',
       },
       { status: 400 }
     );

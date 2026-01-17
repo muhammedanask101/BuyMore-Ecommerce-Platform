@@ -4,6 +4,7 @@ import connectDB from '@/lib/db';
 import Order from '@/models/Order';
 import { sendOrderConfirmationEmail } from '@/lib/email/sendOrderConfirmation';
 import { sendInvoiceEmail } from '@/lib/email/sendInvoiceEmail';
+import { logPayment } from '@/lib/payments/logPayment';
 
 export async function POST(req: Request) {
   await connectDB();
@@ -31,6 +32,17 @@ export async function POST(req: Request) {
 
   order.status = 'paid';
   order.paidAt = new Date();
+
+  await logPayment({
+    orderId: order._id,
+    provider: 'razorpay',
+    event: 'success',
+    amount: order.total,
+    metadata: {
+      paymentId: razorpay_payment_id,
+    },
+  });
+
   await sendOrderConfirmationEmail(order, order.shippingAddress.email);
   await sendInvoiceEmail(order, order.shippingAddress.email);
 

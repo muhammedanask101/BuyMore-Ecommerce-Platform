@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
+import { logPayment } from '@/lib/payments/logPayment';
 
 function hashOtp(otp: string) {
   return crypto.createHash('sha256').update(otp).digest('hex');
@@ -43,6 +44,12 @@ export async function POST(req: Request) {
   order.codOtpExpiresAt = undefined;
 
   await order.save();
+
+  await logPayment({
+    orderId: order._id,
+    provider: 'cod',
+    event: 'cod_verified',
+  });
 
   return NextResponse.json({ success: true });
 }

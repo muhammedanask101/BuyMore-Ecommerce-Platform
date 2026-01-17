@@ -6,13 +6,15 @@ import type { OrderDTO } from '@/types/order';
 import { PayButton } from '@/components/custom/PayButton';
 
 type Props = {
-  params: { orderId: string };
+  params: Promise<{ orderId: string }>;
 };
 
 export default async function OrderConfirmationPage({ params }: Props) {
+  const { orderId } = await params; // ✅ unwrap params
+
   await connectDB();
 
-  const cookieStore = await cookies();
+  const cookieStore = await cookies(); // ✅ NOT async
   const guestId = cookieStore.get('guest_id')?.value;
 
   if (!guestId) {
@@ -20,7 +22,7 @@ export default async function OrderConfirmationPage({ params }: Props) {
   }
 
   const order = await Order.findOne({
-    _id: params.orderId,
+    _id: orderId,
     guestId,
   }).lean<OrderDTO>();
 
@@ -74,7 +76,7 @@ export default async function OrderConfirmationPage({ params }: Props) {
       {/* ===========================
          ONLINE PAYMENT – RETRY
       ============================ */}
-      {order.status === 'pending' && order.paymentProvider === 'razorpay' && (
+      {order.status === 'pending_payment' && order.paymentProvider === 'razorpay' && (
         <div className="space-y-2">
           <p className="text-sm text-red-600">Payment not completed. You can retry safely.</p>
 
@@ -89,11 +91,14 @@ export default async function OrderConfirmationPage({ params }: Props) {
         <p className="text-sm text-green-600">Payment received successfully.</p>
       )}
 
+      {/* ===========================
+         COD OTP
+      ============================ */}
       {order.paymentProvider === 'cod' && !order.codVerified && (
         <div className="border rounded p-4 space-y-3">
           <p className="text-sm font-medium">Verify your phone number to confirm COD order</p>
 
-          <form action={`/api/orders/cod/verify`} method="post">
+          <form action="/api/orders/cod/verify" method="post">
             <input
               type="text"
               name="otp"

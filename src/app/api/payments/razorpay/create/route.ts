@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
+import { logPayment } from '@/lib/payments/logPayment';
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
 
   const order = await Order.findById(orderId);
 
-  if (!order || order.status !== 'pending') {
+  if (!order || order.status !== 'pending_payment') {
     return NextResponse.json({ error: 'Invalid order' }, { status: 400 });
   }
 
@@ -23,6 +24,12 @@ export async function POST(req: Request) {
     amount: order.total * 100, // paise
     currency: order.currency ?? 'INR',
     receipt: order._id.toString(),
+  });
+  await logPayment({
+    orderId: order._id,
+    provider: 'razorpay',
+    event: 'created',
+    amount: order.total,
   });
 
   order.paymentProvider = 'razorpay';

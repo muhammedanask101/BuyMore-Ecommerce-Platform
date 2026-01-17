@@ -1,5 +1,24 @@
 import { Types } from 'mongoose';
 
+/* ===========================
+   ORDER STATUS (SINGLE SOURCE OF TRUTH)
+=========================== */
+
+export type OrderStatus =
+  | 'pending_payment' // order created, awaiting payment
+  | 'payment_failed' // payment attempt failed
+  | 'paid' // payment confirmed
+  | 'processing' // preparing shipment
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled' // cancelled before shipment
+  | 'refund_pending' // refund initiated
+  | 'refunded';
+
+/* ===========================
+   ORDER ITEM (IMMUTABLE SNAPSHOT)
+=========================== */
+
 export type OrderItemDTO = {
   productId: Types.ObjectId;
   name: string;
@@ -12,7 +31,11 @@ export type OrderDTO = {
   _id: string;
 
   guestId?: string | null;
-  userId?: string | null;
+
+  contact: {
+    phone: string;
+    email?: string;
+  };
 
   items: {
     productId: string;
@@ -28,11 +51,19 @@ export type OrderDTO = {
   total: number;
   currency: string;
 
-  status: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+  status:
+    | 'pending_payment'
+    | 'payment_failed'
+    | 'paid'
+    | 'processing'
+    | 'shipped'
+    | 'delivered'
+    | 'cancelled'
+    | 'refund_pending'
+    | 'refunded';
 
-  paymentProvider?: 'razorpay' | 'cod' | null;
+  paymentProvider?: 'razorpay' | 'cod';
 
-  /* ===== COD ===== */
   codVerified?: boolean;
 
   createdAt: string;

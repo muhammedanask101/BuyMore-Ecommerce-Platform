@@ -1,10 +1,7 @@
 'use client';
 
 import Script from 'next/script';
-
-/* ===========================
-   TYPES
-=========================== */
+const IS_MOCK = process.env.NEXT_PUBLIC_PAYMENTS_MODE === 'mock';
 
 type RazorpaySuccessResponse = {
   razorpay_payment_id: string;
@@ -44,6 +41,19 @@ declare global {
 
 export function PayButton({ orderId }: { orderId: string }) {
   async function pay() {
+    if (IS_MOCK) {
+      await fetch('/api/orders/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+        }),
+      });
+
+      window.location.reload();
+      return;
+    }
+
     const res = await fetch('/api/payments/razorpay/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -81,11 +91,28 @@ export function PayButton({ orderId }: { orderId: string }) {
       },
 
       modal: {
-        ondismiss: () => {
-          alert('Payment not completed. You can retry.');
+        ondismiss: async () => {
+          await fetch('/api/payments/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId,
+              provider: 'razorpay',
+              event: 'cancelled',
+            }),
+          });
         },
       },
     };
+
+    await fetch('/api/payments/log', {
+      method: 'POST',
+      body: JSON.stringify({
+        orderId,
+        provider: 'razorpay',
+        event: 'attempted',
+      }),
+    });
 
     const rzp = new window.Razorpay(options);
     rzp.open();

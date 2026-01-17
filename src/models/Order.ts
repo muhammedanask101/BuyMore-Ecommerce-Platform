@@ -1,9 +1,5 @@
 import mongoose, { Schema, Types } from 'mongoose';
 
-/* ===========================
-   ORDER ITEM (IMMUTABLE SNAPSHOT)
-=========================== */
-
 const OrderItemSchema = new Schema(
   {
     productId: {
@@ -96,15 +92,17 @@ const OrderSchema = new Schema(
     status: {
       type: String,
       enum: [
-        'pending', // created, unpaid
-        'paid', // payment confirmed
+        'pending_payment',
+        'payment_failed',
+        'paid',
         'processing',
         'shipped',
         'delivered',
         'cancelled',
+        'refund_pending',
         'refunded',
       ],
-      default: 'pending',
+      default: 'pending_payment',
       index: true,
     },
 
@@ -128,6 +126,24 @@ const OrderSchema = new Schema(
       type: String,
       index: true,
     },
+    /* ===== Contact Info ===== */
+
+    contact: {
+      phone: {
+        type: String,
+        required: true,
+        index: true,
+      },
+
+      email: {
+        type: String,
+        required: false,
+        lowercase: true,
+        trim: true,
+        index: true,
+      },
+    },
+
     cancelReason: {
       type: String,
     },

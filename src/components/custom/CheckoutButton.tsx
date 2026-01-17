@@ -4,14 +4,17 @@ import { useState } from 'react';
 import { getCart, clearCart } from '@/lib/cart';
 import { createOrder } from '@/lib/checkout';
 import { ShippingAddress } from '@/types/checkout';
+import { setCookie } from 'cookies-next';
 
 type Props = {
+  email: string;
   shippingAddress: ShippingAddress;
-  paymentProvider?: 'stripe' | 'razorpay' | 'cod';
+  paymentProvider?: 'razorpay' | 'cod';
   onSuccess?: (orderId: string) => void;
 };
 
 export default function CheckoutButton({
+  email,
   shippingAddress,
   paymentProvider = 'cod',
   onSuccess,
@@ -31,13 +34,18 @@ export default function CheckoutButton({
       }
 
       const order = await createOrder({
+        email,
         items: cart.items.map((i) => ({
           productId: i.productId,
-          variantId: undefined,
           quantity: i.quantity,
         })),
         shippingAddress,
         paymentProvider,
+      });
+
+      setCookie('guest_id', order.guestId, {
+        maxAge: 60 * 60 * 24 * 7,
+        path: '/',
       });
 
       clearCart();
