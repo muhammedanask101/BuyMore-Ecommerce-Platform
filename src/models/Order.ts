@@ -102,6 +102,7 @@ const OrderSchema = new Schema(
         'refund_pending',
         'refunded',
       ],
+
       default: 'pending_payment',
       index: true,
     },
@@ -147,6 +148,9 @@ const OrderSchema = new Schema(
     cancelReason: {
       type: String,
     },
+    cancelledAt: {
+      type: Date,
+    },
     /* ===== COD Protection ===== */
 
     codVerified: {
@@ -177,7 +181,6 @@ const OrderSchema = new Schema(
 
     /* ===== Soft delete / audit ===== */
 
-    cancelledAt: Date,
     refundedAt: Date,
   },
   {

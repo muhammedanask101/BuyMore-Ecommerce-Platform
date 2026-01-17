@@ -2,43 +2,57 @@ import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
-import type { OrderDTO } from '@/types/order';
+import type { OrderDTO, OrderStatus } from '@/types/order';
 import { PayButton } from '@/components/custom/PayButton';
+import { RequestRefundButton } from '@/components/order/RequestRefundButton';
+import { CancelOrderButton } from '@/components/order/CancelOrderButton';
+
+/* ===========================
+   STATUS LABELS
+=========================== */
+
+const STATUS_LABELS: Record<OrderStatus, string> = {
+  pending_payment: 'Payment pending',
+  payment_failed: 'Payment failed',
+  paid: 'Paid',
+  processing: 'Processing',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  refund_pending: 'Refund under review',
+  refunded: 'Refunded',
+  cancelled: 'Cancelled',
+};
 
 type Props = {
   params: Promise<{ orderId: string }>;
 };
 
-export default async function OrderConfirmationPage({ params }: Props) {
-  const { orderId } = await params; // ✅ unwrap params
+export default async function OrderDetailsPage({ params }: Props) {
+  const { orderId } = await params;
 
   await connectDB();
 
-  const cookieStore = await cookies(); // ✅ NOT async
+  const cookieStore = await cookies();
   const guestId = cookieStore.get('guest_id')?.value;
 
-  if (!guestId) {
-    notFound();
-  }
+  if (!guestId) notFound();
 
   const order = await Order.findOne({
     _id: orderId,
     guestId,
   }).lean<OrderDTO>();
 
-  if (!order) {
-    notFound();
-  }
+  if (!order) notFound();
 
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Order placed</h1>
+      <h1 className="text-2xl font-semibold">Order details</h1>
 
       <p className="text-sm text-gray-600">Order ID: {order._id.toString()}</p>
 
       {/* ===========================
-         ORDER ITEMS
-      ============================ */}
+         ITEMS
+      =========================== */}
       <div className="border rounded-lg p-4 space-y-3">
         {order.items.map((item) => (
           <div key={item.productId.toString()} className="flex justify-between text-sm">
@@ -57,56 +71,52 @@ export default async function OrderConfirmationPage({ params }: Props) {
       </div>
 
       {/* ===========================
-         PAYMENT STATUS
-      ============================ */}
-      <p className="text-sm">
-        Payment status: <strong className="capitalize">{order.status}</strong>
-      </p>
+         STATUS
+      =========================== */}
+      <div className="border rounded-lg p-4 space-y-1">
+        <p className="font-medium">Status: {STATUS_LABELS[order.status]}</p>
+
+        {order.paidAt && (
+          <p className="text-sm text-gray-600">Paid on {new Date(order.paidAt).toLocaleString()}</p>
+        )}
+      </div>
 
       {/* ===========================
-         COD MESSAGE
-      ============================ */}
-      {order.paymentProvider === 'cod' && (
-        <div className="rounded border-2 border-black p-4 bg-yellow-100">
-          <p className="font-medium">Cash on Delivery selected.</p>
-          <p className="text-sm">Please keep the payment ready at the time of delivery.</p>
-        </div>
+   USER REFUND / CANCELLATION
+=========================== */}
+      {(order.status === 'paid' || order.status === 'processing') && (
+        <RequestRefundButton orderId={order._id.toString()} />
       )}
 
+      {order.status === 'pending_payment' && <CancelOrderButton orderId={order._id.toString()} />}
+
       {/* ===========================
-         ONLINE PAYMENT – RETRY
-      ============================ */}
+         RETRY PAYMENT
+      =========================== */}
       {order.status === 'pending_payment' && order.paymentProvider === 'razorpay' && (
         <div className="space-y-2">
           <p className="text-sm text-red-600">Payment not completed. You can retry safely.</p>
-
           <PayButton orderId={order._id.toString()} />
         </div>
       )}
 
       {/* ===========================
-         PAYMENT SUCCESS
-      ============================ */}
-      {order.status === 'paid' && (
-        <p className="text-sm text-green-600">Payment received successfully.</p>
+         REFUND PENDING
+      =========================== */}
+      {order.status === 'refund_pending' && (
+        <div className="border rounded-lg p-4 bg-yellow-50">
+          <p className="font-medium text-yellow-700">Refund under review</p>
+          <p className="text-sm text-yellow-700">We’ll notify you once the refund is processed.</p>
+        </div>
       )}
 
       {/* ===========================
-         COD OTP
-      ============================ */}
-      {order.paymentProvider === 'cod' && !order.codVerified && (
-        <div className="border rounded p-4 space-y-3">
-          <p className="text-sm font-medium">Verify your phone number to confirm COD order</p>
-
-          <form action="/api/orders/cod/verify" method="post">
-            <input
-              type="text"
-              name="otp"
-              placeholder="Enter 6-digit OTP"
-              className="border px-3 py-2 w-full"
-            />
-            <button className="mt-2 w-full bg-black text-white py-2">Verify OTP</button>
-          </form>
+         COD MESSAGE
+      =========================== */}
+      {order.paymentProvider === 'cod' && (
+        <div className="border rounded-lg p-4 bg-yellow-100">
+          <p className="font-medium">Cash on Delivery</p>
+          <p className="text-sm">Please keep the payment ready at delivery.</p>
         </div>
       )}
     </main>

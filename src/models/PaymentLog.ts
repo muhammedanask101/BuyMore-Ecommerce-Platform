@@ -19,14 +19,14 @@ const PaymentLogSchema = new Schema(
     event: {
       type: String,
       enum: [
-        'created', // payment intent created
-        'attempted', // checkout opened
-        'success', // payment verified
-        'failed', // payment failed
-        'cancelled', // user closed modal
-        'cod_created', // COD order created
-        'cod_verified', // OTP verified
-        'refund',
+        'payment_attempted',
+        'payment_failed',
+        'payment_success',
+        'refund_requested',
+        'refund_approved',
+        'refund_rejected',
+        'refund_processed',
+        'order_cancelled',
       ],
       required: true,
       index: true,

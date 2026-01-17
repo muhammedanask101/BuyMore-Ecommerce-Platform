@@ -5,15 +5,15 @@ import { Types } from 'mongoose';
 =========================== */
 
 export type OrderStatus =
-  | 'pending_payment' // order created, awaiting payment
-  | 'payment_failed' // payment attempt failed
-  | 'paid' // payment confirmed
-  | 'processing' // preparing shipment
+  | 'pending_payment'
+  | 'payment_failed'
+  | 'paid'
+  | 'processing'
   | 'shipped'
   | 'delivered'
-  | 'cancelled' // cancelled before shipment
-  | 'refund_pending' // refund initiated
-  | 'refunded';
+  | 'refund_pending'
+  | 'refunded'
+  | 'cancelled';
 
 /* ===========================
    ORDER ITEM (IMMUTABLE SNAPSHOT)
@@ -31,11 +31,7 @@ export type OrderDTO = {
   _id: string;
 
   guestId?: string | null;
-
-  contact: {
-    phone: string;
-    email?: string;
-  };
+  userId?: string | null;
 
   items: {
     productId: string;
@@ -51,18 +47,13 @@ export type OrderDTO = {
   total: number;
   currency: string;
 
-  status:
-    | 'pending_payment'
-    | 'payment_failed'
-    | 'paid'
-    | 'processing'
-    | 'shipped'
-    | 'delivered'
-    | 'cancelled'
-    | 'refund_pending'
-    | 'refunded';
+  status: OrderStatus;
 
-  paymentProvider?: 'razorpay' | 'cod';
+  paymentProvider?: 'razorpay' | 'cod' | null;
+
+  paidAt?: string;
+  cancelledAt?: string;
+  cancelReason?: string;
 
   codVerified?: boolean;
 
