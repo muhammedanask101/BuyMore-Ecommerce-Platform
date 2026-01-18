@@ -107,6 +107,12 @@ const OrderSchema = new Schema(
       index: true,
     },
 
+    /* ===== Stock Safety ===== */
+    stockRestored: {
+      type: Boolean,
+      default: false,
+    },
+
     /* ===== Payment ===== */
 
     paymentProvider: {

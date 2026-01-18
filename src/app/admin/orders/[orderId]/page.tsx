@@ -146,7 +146,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
       {/* ===========================
          REFUND DECISION (ADMIN)
       =========================== */}
-      {order.status === 'refund_pending' && (
+      {order.status === 'refund_pending' && order.paymentProvider !== 'cod' && (
         <section className="border-4 border-black bg-white p-6 space-y-4">
           <h2 className="font-extrabold text-red-600">Refund Requested</h2>
 
@@ -155,8 +155,8 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             <ApproveRefundButton orderId={order._id.toString()} />
 
             {/* REJECT */}
-            <form action="/api/admin/orders/reject-refund" method="POST">
-              <input type="hidden" name="orderId" value={order._id.toString()} />
+            <form action={`/api/admin/orders/${order._id.toString()}`} method="POST">
+              <input type="hidden" name="status" value="processing" />
 
               <button className="border-2 border-black px-6 py-2 bg-white hover:bg-black hover:text-white transition">
                 Reject Refund

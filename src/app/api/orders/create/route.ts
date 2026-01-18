@@ -5,6 +5,8 @@ import { cookies } from 'next/headers';
 import connectDB from '@/lib/db';
 import Product from '@/models/Product';
 import Order from '@/models/Order';
+import PhoneVerification from '@/models/PhoneVerification';
+import { normalizeIndianPhone } from '@/lib/utils/phone';
 
 /* ===========================
    TYPES
@@ -32,6 +34,19 @@ export async function POST(req: Request) {
     const items: OrderItemInput[] = body.items;
     const shippingAddress = body.shippingAddress;
     const paymentProvider: 'razorpay' | 'cod' = body.paymentProvider;
+
+    if (paymentProvider === 'cod') {
+      const phone = normalizeIndianPhone(shippingAddress.phone);
+
+      const record = await PhoneVerification.findOne({
+        phone,
+        verified: true,
+      });
+
+      if (!record) {
+        throw new Error('Please verify phone number to use Cash on Delivery');
+      }
+    }
 
     /* ===========================
        VALIDATION

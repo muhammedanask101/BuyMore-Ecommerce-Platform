@@ -23,7 +23,13 @@ function isAdminNextStatus(value: string): value is AdminNextStatus {
    ROUTE
 =========================== */
 
-export async function POST(req: Request, { params }: { params: { orderId: string } }) {
+export async function POST(req: Request, context: { params: Promise<{ orderId: string }> }) {
+  /* ===========================
+     PARAMS (CRITICAL FIX)
+  =========================== */
+
+  const { orderId } = await context.params;
+
   /* ===========================
      AUTH
   =========================== */
@@ -49,21 +55,17 @@ export async function POST(req: Request, { params }: { params: { orderId: string
   const form = await req.formData();
   const rawStatus = form.get('status');
 
-  if (typeof rawStatus !== 'string') {
-    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
-  }
-
-  if (!isAdminNextStatus(rawStatus)) {
+  if (typeof rawStatus !== 'string' || !isAdminNextStatus(rawStatus)) {
     return NextResponse.json({ error: 'Invalid status transition' }, { status: 400 });
   }
 
   const nextStatus: AdminNextStatus = rawStatus;
 
   /* ===========================
-     LOAD ORDER  ✅ FIX HERE
+     LOAD ORDER
   =========================== */
 
-  const order = await Order.findById(params.orderId);
+  const order = await Order.findById(orderId);
   if (!order) {
     return NextResponse.json({ error: 'Order not found' }, { status: 404 });
   }
@@ -79,7 +81,7 @@ export async function POST(req: Request, { params }: { params: { orderId: string
     processing: ['shipped'],
     shipped: ['delivered'],
     delivered: [],
-    refund_pending: [],
+    refund_pending: ['refunded', 'processing'],
     refunded: [],
     cancelled: [],
   };
@@ -99,17 +101,9 @@ export async function POST(req: Request, { params }: { params: { orderId: string
 
   order.status = nextStatus;
 
-  if (nextStatus === 'processing') {
-    order.processingAt = new Date();
-  }
-
-  if (nextStatus === 'shipped') {
-    order.shippedAt = new Date();
-  }
-
-  if (nextStatus === 'delivered') {
-    order.deliveredAt = new Date();
-  }
+  if (nextStatus === 'processing') order.processingAt = new Date();
+  if (nextStatus === 'shipped') order.shippedAt = new Date();
+  if (nextStatus === 'delivered') order.deliveredAt = new Date();
 
   await order.save();
 

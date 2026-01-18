@@ -1,8 +1,13 @@
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
-import Product from '@/models/Product';
+import PaymentLog from '@/models/PaymentLog';
+import { restoreStock } from '@/lib/orders/restoreStock';
 
 const COD_TIMEOUT_HOURS = 48;
+
+/* ===========================
+   ROLLBACK EXPIRED COD ORDERS
+=========================== */
 
 export async function rollbackExpiredCodOrders() {
   await connectDB();
@@ -16,8 +21,9 @@ export async function rollbackExpiredCodOrders() {
   });
 
   for (const order of expiredOrders) {
-    for (const item of order.items) {
-      await Product.updateOne({ _id: item.productId }, { $inc: { stock: item.quantity } });
+    if (!order.stockRestored) {
+      await restoreStock(order); // ✅ FIXED
+      order.stockRestored = true;
     }
 
     order.status = 'cancelled';
@@ -25,6 +31,13 @@ export async function rollbackExpiredCodOrders() {
     order.cancelledAt = new Date();
 
     await order.save();
+
+    await PaymentLog.create({
+      orderId: order._id,
+      provider: 'cod',
+      event: 'order_cancelled',
+      metadata: { reason: 'cod_timeout' },
+    });
   }
 
   return { cancelled: expiredOrders.length };

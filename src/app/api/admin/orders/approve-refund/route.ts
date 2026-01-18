@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
-import Product from '@/models/Product';
 import PaymentLog from '@/models/PaymentLog';
+import { restoreStock } from '@/lib/orders/restoreStock';
 
 /* ===========================
    APPROVE REFUND (ADMIN)
@@ -24,48 +24,54 @@ export async function POST(req: Request) {
     }
 
     /* ===========================
-       ATOMIC REFUND TRANSITION
+       LOAD ORDER (NO MUTATION)
     =========================== */
 
-    const order = await Order.findOneAndUpdate(
-      { _id: orderId, status: 'refund_pending' },
-      { status: 'refunded', refundedAt: new Date() },
-      { session, new: true }
-    );
+    const order = await Order.findById(orderId).session(session);
 
-    if (!order) {
+    if (!order || order.status !== 'refund_pending') {
       throw new Error('Order not eligible for refund');
     }
+
+    /* ===========================
+       🚫 COD REFUND BLOCK (CORRECT PLACE)
+    =========================== */
+
+    if (order.paymentProvider === 'cod') {
+      throw new Error('COD orders cannot be refunded');
+    }
+
+    /* ===========================
+       APPLY REFUND TRANSITION
+    =========================== */
+
+    order.status = 'refunded';
+    order.refundedAt = new Date();
+    await order.save({ session });
 
     /* ===========================
        RESTORE STOCK
     =========================== */
 
-    for (const item of order.items) {
-      await Product.updateOne(
-        { _id: item.productId },
-        { $inc: { stock: item.quantity } },
-        { session }
-      );
+    if (!order.stockRestored) {
+      await restoreStock(order, session);
+      order.stockRestored = true;
     }
-
     /* ===========================
        PAYMENT LOG
     =========================== */
 
-    if (order.paymentProvider !== 'cod') {
-      await PaymentLog.create(
-        [
-          {
-            orderId: order._id,
-            provider: order.paymentProvider,
-            event: 'refund_approved',
-            amount: order.total,
-          },
-        ],
-        { session }
-      );
-    }
+    await PaymentLog.create(
+      [
+        {
+          orderId: order._id,
+          provider: order.paymentProvider,
+          event: 'refund_approved',
+          amount: order.total,
+        },
+      ],
+      { session }
+    );
 
     await session.commitTransaction();
     session.endSession();
