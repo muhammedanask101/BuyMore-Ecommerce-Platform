@@ -1,33 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { getCart } from '@/lib/cart';
-import { createOrder } from '@/lib/checkout';
 import type { ShippingAddress } from '@/types/checkout';
-import { setCookie } from 'cookies-next';
-import CodVerifyModal from '@/components/checkout/CodVerifyModal';
+import { buildWhatsAppMessage, getWhatsAppUrl } from '@/lib/whatsapp';
+import { normalizeIndianPhone } from '@/lib/utils/phone';
+import { validateCheckoutAddress } from '@/lib/validators/checkout';
 
 export default function CheckoutPage() {
-  const router = useRouter();
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showCodModal, setShowCodModal] = useState(false);
 
-  /* ===========================
-     EMAIL (ORDER IDENTITY)
-  ============================ */
-  const [email, setEmail] = useState('');
-
-  /* ===========================
-     PAYMENT METHOD
-  ============================ */
-  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay');
-
-  /* ===========================
-     SHIPPING ADDRESS
-  ============================ */
   const [address, setAddress] = useState<ShippingAddress>({
     name: '',
     phone: '',
@@ -43,9 +26,6 @@ export default function CheckoutPage() {
     setAddress((prev) => ({ ...prev, [field]: value }));
   }
 
-  /* ===========================
-     PLACE ORDER
-  ============================ */
   async function handlePlaceOrder() {
     setLoading(true);
     setError(null);
@@ -53,42 +33,54 @@ export default function CheckoutPage() {
     try {
       const cart = getCart();
 
-      if (!email) {
-        throw new Error('Email is required');
-      }
-
       if (cart.items.length === 0) {
         throw new Error('Cart is empty');
       }
 
-      if (
-        !address.name ||
-        !address.phone ||
-        !address.addressLine1 ||
-        !address.city ||
-        !address.state ||
-        !address.postalCode
-      ) {
-        throw new Error('Please fill all required address fields');
+      const { error, value } = validateCheckoutAddress(address);
+
+      if (error) {
+        setError(error);
+        return;
       }
 
-      const order = await createOrder({
-        email, // ✅ REQUIRED & NOW PRESENT
-        items: cart.items.map((i) => ({
-          productId: i.productId,
-          quantity: i.quantity,
-          size: i.size,
-        })),
-        shippingAddress: address,
-        paymentProvider: paymentMethod,
+      const validatedAddress = value!;
+
+      const validateRes = await fetch('/api/cart/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            variantId: i.size ?? undefined,
+          })),
+        }),
       });
 
-      setCookie('guest_id', order.guestId, {
-        maxAge: 60 * 60 * 24 * 7,
-        path: '/',
-      });
+      if (!validateRes.ok) {
+        throw new Error('Failed to validate cart');
+      }
 
-      router.push(`/order/${order.orderId}`);
+      const { items, total } = await validateRes.json();
+
+      const orderPayload = {
+        customer: {
+          name: validatedAddress.name,
+          phone: validatedAddress.phone, // already normalized
+          address: `${validatedAddress.addressLine1}${
+            validatedAddress.addressLine2 ? `, ${validatedAddress.addressLine2}` : ''
+          }, ${validatedAddress.city}, ${validatedAddress.state} - ${validatedAddress.postalCode}`,
+        },
+        items,
+        total,
+      };
+
+      const message = buildWhatsAppMessage(orderPayload);
+      const adminPhone = normalizeIndianPhone(process.env.NEXT_PUBLIC_ADMIN_WHATSAPP!);
+      const whatsappUrl = getWhatsAppUrl(adminPhone, message);
+
+      window.location.href = whatsappUrl;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Checkout failed');
     } finally {
@@ -97,137 +89,71 @@ export default function CheckoutPage() {
   }
 
   return (
-    <>
-      {showCodModal && (
-        <CodVerifyModal
-          phone={address.phone}
-          onSuccess={async () => {
-            await handlePlaceOrder();
-            setShowCodModal(false);
-          }}
-          onClose={() => setShowCodModal(false)}
-        />
-      )}
+    <main className="max-w-3xl mx-auto p-6 space-y-8">
+      <h1 className="text-2xl font-semibold">Checkout</h1>
 
-      <main className="max-w-3xl mx-auto p-6 space-y-8">
-        <h1 className="text-2xl font-semibold">Checkout</h1>
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
-
-        {/* ===========================
-         EMAIL
-      ============================ */}
+      <div className="space-y-4">
         <input
-          type="email"
-          placeholder="Email address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Full name"
+          value={address.name}
+          onChange={(e) => updateField('name', e.target.value)}
           className="w-full border rounded px-3 py-2"
-          required
         />
 
-        {/* ===========================
-         SHIPPING ADDRESS
-      ============================ */}
-        <div className="space-y-4">
+        <input
+          placeholder="Phone"
+          value={address.phone}
+          onChange={(e) => updateField('phone', e.target.value)}
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <input
+          placeholder="Address line 1"
+          value={address.addressLine1}
+          onChange={(e) => updateField('addressLine1', e.target.value)}
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <input
+          placeholder="Address line 2 (optional)"
+          value={address.addressLine2}
+          onChange={(e) => updateField('addressLine2', e.target.value)}
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <div className="grid grid-cols-2 gap-4">
           <input
-            placeholder="Full name"
-            value={address.name}
-            onChange={(e) => updateField('name', e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            placeholder="City"
+            value={address.city}
+            onChange={(e) => updateField('city', e.target.value)}
+            className="border rounded px-3 py-2"
           />
 
           <input
-            placeholder="Phone"
-            value={address.phone}
-            onChange={(e) => updateField('phone', e.target.value)}
-            className="w-full border rounded px-3 py-2"
-          />
-
-          <input
-            placeholder="Address line 1"
-            value={address.addressLine1}
-            onChange={(e) => updateField('addressLine1', e.target.value)}
-            className="w-full border rounded px-3 py-2"
-          />
-
-          <input
-            placeholder="Address line 2 (optional)"
-            value={address.addressLine2}
-            onChange={(e) => updateField('addressLine2', e.target.value)}
-            className="w-full border rounded px-3 py-2"
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              placeholder="City"
-              value={address.city}
-              onChange={(e) => updateField('city', e.target.value)}
-              className="border rounded px-3 py-2"
-            />
-
-            <input
-              placeholder="State"
-              value={address.state}
-              onChange={(e) => updateField('state', e.target.value)}
-              className="border rounded px-3 py-2"
-            />
-          </div>
-
-          <input
-            placeholder="Postal code"
-            value={address.postalCode}
-            onChange={(e) => updateField('postalCode', e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            placeholder="State"
+            value={address.state}
+            onChange={(e) => updateField('state', e.target.value)}
+            className="border rounded px-3 py-2"
           />
         </div>
 
-        {/* ===========================
-         PAYMENT METHOD
-      ============================ */}
-        <div className="border rounded-lg p-4 space-y-2">
-          <p className="font-medium">Payment Method</p>
+        <input
+          placeholder="Postal code"
+          value={address.postalCode}
+          onChange={(e) => updateField('postalCode', e.target.value)}
+          className="w-full border rounded px-3 py-2"
+        />
+      </div>
 
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              checked={paymentMethod === 'razorpay'}
-              onChange={() => setPaymentMethod('razorpay')}
-            />
-            Pay Online (UPI / Card)
-          </label>
-
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              checked={paymentMethod === 'cod'}
-              onChange={() => setPaymentMethod('cod')}
-            />
-            Cash on Delivery
-          </label>
-        </div>
-
-        {/* ===========================
-         PLACE ORDER
-      ============================ */}
-        <button
-          onClick={() => {
-            if (paymentMethod === 'cod') {
-              setShowCodModal(true);
-            } else {
-              handlePlaceOrder();
-            }
-          }}
-          disabled={loading}
-          className="w-full bg-black text-white py-3 rounded-lg font-medium disabled:opacity-50"
-        >
-          {loading
-            ? 'Placing order…'
-            : paymentMethod === 'cod'
-              ? 'Place COD Order'
-              : 'Proceed to Payment'}
-        </button>
-      </main>
-    </>
+      <button
+        onClick={handlePlaceOrder}
+        disabled={loading}
+        className="w-full bg-black text-white py-3 rounded-lg font-medium disabled:opacity-50"
+      >
+        {loading ? 'Preparing WhatsApp…' : 'Order on WhatsApp'}
+      </button>
+    </main>
   );
 }

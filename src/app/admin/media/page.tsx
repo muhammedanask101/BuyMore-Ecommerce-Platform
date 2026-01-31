@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic';
 
 import connectDB from '@/lib/db';
 import Media from '@/models/Media';
-import AdminLayout from '@/app/admin/layout';
 import MediaTable from '@/components/custom/MediaTable';
 
 export default async function AdminMediaPage() {

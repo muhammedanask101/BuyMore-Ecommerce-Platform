@@ -49,6 +49,7 @@ export async function POST(req: Request) {
         name: 'Product not found',
         price: 0,
         quantity: item.quantity,
+        variantId: item.variantId ?? null,
         subtotal: 0,
         inStock: false,
       });
@@ -67,6 +68,7 @@ export async function POST(req: Request) {
       name: product.name,
       price: product.price,
       quantity: item.quantity,
+      variantId: item.variantId ?? null,
       subtotal,
       inStock,
     });
