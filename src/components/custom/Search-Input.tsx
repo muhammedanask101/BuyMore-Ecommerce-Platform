@@ -1,18 +1,15 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
-import { Bookmark, BookmarkCheckIcon, ListFilterIcon, SearchIcon } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
+import { ListFilterIcon, SearchIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Props {
   disabled?: boolean;
+  onOpenFilters?: () => void;
 }
 
-export const SearchInput = ({ disabled }: Props) => {
-  //   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+export const SearchInput = ({ disabled, onOpenFilters }: Props) => {
   return (
     <div className="flex items-center gap-2 w-full">
       <div className="relative w-full">
@@ -20,23 +17,13 @@ export const SearchInput = ({ disabled }: Props) => {
         <Input className="pl-8" placeholder="Search products" disabled={disabled} />
       </div>
       <Button
+        type="button"
         variant="elevated"
-        className="size-12 shrink-0 flex lg:hidden"
-        //        onClick={() => setIsSidebarOpen(true)}
+        className="size-12 shrink-0 lg:hidden"
+        onClick={onOpenFilters}
       >
         <ListFilterIcon />
       </Button>
-      {/* {session.data?.user && (
-                <Button
-                asChild
-                variant="elevated"
-                >
-                    <Link href="/library">
-                        <BookmarkCheckIcon />
-                        Library
-                    </Link>
-                </Button>
-            )} */}
     </div>
   );
 };
