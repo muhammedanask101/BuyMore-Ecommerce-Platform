@@ -16,12 +16,13 @@ interface ProductsResponse {
 
 interface Props {
   sort: 'curated' | 'trending' | 'hot_and_new';
+  search?: string;
   minPrice?: string | null;
   maxPrice?: string | null;
   narrowView?: boolean;
 }
 
-export const ProductListView = ({ narrowView, sort, minPrice, maxPrice }: Props) => {
+export const ProductListView = ({ narrowView, sort, search, minPrice, maxPrice }: Props) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(true);
@@ -40,6 +41,7 @@ export const ProductListView = ({ narrowView, sort, minPrice, maxPrice }: Props)
           page: '1',
           limit: PAGE_LIMIT.toString(),
           sort,
+          ...(search ? { search } : {}),
           ...(minPrice ? { minPrice } : {}),
           ...(maxPrice ? { maxPrice } : {}),
         });
@@ -67,14 +69,23 @@ export const ProductListView = ({ narrowView, sort, minPrice, maxPrice }: Props)
     return () => {
       cancelled = true;
     };
-  }, [sort, , minPrice, maxPrice]);
+  }, [sort, search, minPrice, maxPrice]);
 
   const loadMore = async () => {
     if (!hasNextPage || isLoadingMore) return;
 
     setIsLoadingMore(true);
 
-    const res = await fetch(`/api/products?page=${page + 1}&limit=${PAGE_LIMIT}&sort=${sort}`, {
+    const params = new URLSearchParams({
+      page: String(page + 1),
+      limit: String(PAGE_LIMIT),
+      sort,
+      ...(search ? { search } : {}),
+      ...(minPrice ? { minPrice } : {}),
+      ...(maxPrice ? { maxPrice } : {}),
+    });
+
+    const res = await fetch(`/api/products?${params.toString()}`, {
       cache: 'no-store',
     });
 
@@ -98,7 +109,7 @@ export const ProductListView = ({ narrowView, sort, minPrice, maxPrice }: Props)
   }
 
   return (
-    <div className="px-4 lg:px-12 pt-5 pb-8 flex flex-col gap-6">
+    <div className="px-4 lg:px-12 pt-5 lg:pt-8 pb-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <p className="text-2xl font-medium">Curated for you</p>
       </div>

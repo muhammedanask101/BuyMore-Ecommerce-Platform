@@ -6,65 +6,55 @@ import { ProductSort, ProductSortValue } from '@/components/custom/Product-Sort'
 import { PriceFilter } from '@/components/custom/Filter-Price';
 import { SearchInput, SearchInputSkeleton } from '@/components/custom/Search-Input';
 import { Suspense } from 'react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function Home() {
   const [sort, setSort] = useState<ProductSortValue>('curated');
   const [showFilters, setShowFilters] = useState(false);
   const [minPrice, setMinPrice] = useState<string | null>(null);
   const [maxPrice, setMaxPrice] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   return (
     <>
-      <div
-        className={`
-    fixed inset-0 z-50 lg:hidden
-    transition-opacity duration-200 ease-out
-    ${showFilters ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
-    bg-black/40
-  `}
-        onClick={() => setShowFilters(false)}
-      >
-        <div
-          className={`
-      absolute right-0 top-0 h-full w-[85%] max-w-sm
-      bg-white p-6 overflow-y-auto
-      transition-all duration-200 ease-out
-      ${showFilters ? 'opacity-100' : 'opacity-0'}
-    `}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-lg font-semibold">Filters</p>
-            <button onClick={() => setShowFilters(false)} className="text-sm font-medium">
-              Close
-            </button>
-          </div>
+      <Sheet open={showFilters} onOpenChange={setShowFilters}>
+        <SheetContent side="right" className="p-0">
+          <SheetHeader className="p-4 border-b">
+            <SheetTitle>Filters</SheetTitle>
+          </SheetHeader>
 
-          <div className="space-y-6">
-            <div>
-              <p className="text-base font-medium mb-3">Sort by editor&apos;s choice</p>
-              <ProductSort value={sort} onChange={setSort} />
-            </div>
+          <ScrollArea className="h-full p-6">
+            <div className="space-y-6">
+              <div>
+                <p className="text-base font-medium mb-3">Sort by editor&apos;s choice</p>
+                <ProductSort value={sort} onChange={setSort} />
+              </div>
 
-            <div>
-              <p className="text-base font-medium mb-3">Sort by price</p>
-              <PriceFilter
-                minPrice={minPrice}
-                maxPrice={maxPrice}
-                onMinPriceChange={setMinPrice}
-                onMaxPriceChange={setMaxPrice}
-              />
+              <div>
+                <p className="text-base font-medium mb-3">Sort by price</p>
+                <PriceFilter
+                  minPrice={minPrice}
+                  maxPrice={maxPrice}
+                  onMinPriceChange={setMinPrice}
+                  onMaxPriceChange={setMaxPrice}
+                />
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
 
       <main className="bg-gray-100">
         <div className="px-4 sm:px-6 lg:px-12 py-4 border-b-2 bg-white">
           <div className="flex items-center gap-3">
             <div className="flex-1 bg-gray-100 rounded-md">
               <Suspense fallback={<SearchInputSkeleton />}>
-                <SearchInput onOpenFilters={() => setShowFilters(true)} />
+                <SearchInput
+                  value={query}
+                  onChange={setQuery}
+                  onOpenFilters={() => setShowFilters(true)}
+                />
               </Suspense>
             </div>
           </div>
@@ -91,7 +81,7 @@ export default function Home() {
             </aside>
 
             <section className="lg:col-span-4 xl:col-span-6">
-              <ProductListView sort={sort} />
+              <ProductListView sort={sort} search={query} minPrice={minPrice} maxPrice={maxPrice} />
             </section>
           </div>
         </div>

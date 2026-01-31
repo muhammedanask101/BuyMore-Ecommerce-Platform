@@ -13,6 +13,11 @@ type ProductQuery = {
   status: 'active';
   deletedAt: null;
   price?: PriceRangeQuery;
+  $or?: {
+    name?: { $regex: string; $options: string };
+    slug?: { $regex: string; $options: string };
+    tags?: { $regex: string; $options: string };
+  }[];
 };
 
 export async function GET(req: Request) {
@@ -28,6 +33,8 @@ export async function GET(req: Request) {
   const minPrice = searchParams.get('minPrice');
   const maxPrice = searchParams.get('maxPrice');
 
+  const search = searchParams.get('search');
+
   const match: ProductQuery = {
     status: 'active',
     deletedAt: null,
@@ -36,10 +43,24 @@ export async function GET(req: Request) {
   if (minPrice) match.price = { ...match.price, $gte: Number(minPrice) };
   if (maxPrice) match.price = { ...match.price, $lte: Number(maxPrice) };
 
+  if (search) {
+    const regex = { $regex: search, $options: 'i' };
+
+    match.$or = [{ name: regex }, { slug: regex }, { tags: regex }];
+  }
+
   const sortMap: Record<SortKey, Record<string, 1 | -1>> = {
-    curated: { isFeatured: -1, createdAt: -1 },
-    trending: { 'rating.count': -1 },
-    hot_and_new: { createdAt: -1 },
+    curated: {
+      isFeatured: -1,
+      createdAt: -1,
+    },
+    hot_and_new: {
+      createdAt: -1,
+    },
+    trending: {
+      'rating.count': -1,
+      'rating.average': -1,
+    },
   };
 
   const sort = sortMap[sortParam] ?? sortMap.curated;

@@ -23,7 +23,7 @@ export const formatAsCurrency = (value: string) => {
 
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(numberValue);
@@ -46,7 +46,7 @@ export const PriceFilter = ({ minPrice, maxPrice, onMinPriceChange, onMaxPriceCh
         <Label className="font-medium text-base">Minimum Price</Label>
         <Input
           type="text"
-          placeholder="$0"
+          placeholder="₹ 0"
           value={minPrice ? formatAsCurrency(minPrice) : ''}
           onChange={handleMinPriceChange}
           className="border border-black"
@@ -56,7 +56,7 @@ export const PriceFilter = ({ minPrice, maxPrice, onMinPriceChange, onMaxPriceCh
         <Label className="font-medium text-base">Maximum Price</Label>
         <Input
           type="text"
-          placeholder="∞"
+          placeholder="₹ ∞"
           value={maxPrice ? formatAsCurrency(maxPrice) : ''}
           onChange={handleMaxPriceChange}
           className="border border-black"

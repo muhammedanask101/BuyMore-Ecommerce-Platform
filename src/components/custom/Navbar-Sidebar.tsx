@@ -19,15 +19,15 @@ export const NavbarSidebar = ({ items, open, onOpenChange }: Props) => {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="p-0 transition-none">
         <SheetHeader className="p-4 border-b">
-          <SheetTitle>Menu</SheetTitle>
+          <SheetTitle className="text-2xl">Menu</SheetTitle>
         </SheetHeader>
         <ScrollArea className="flex flex-col overflow-y-auto h-full pb-2">
           {items.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center 
-                        text-base font-medium"
+              className="w-full text-left p-4 text-xl hover:bg-black hover:text-white flex items-center 
+                         font-medium"
               onClick={() => onOpenChange(false)}
             >
               {item.children}

@@ -5,16 +5,24 @@ import { ListFilterIcon, SearchIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Props {
+  value?: string;
   disabled?: boolean;
+  onChange?: (value: string) => void;
   onOpenFilters?: () => void;
 }
 
-export const SearchInput = ({ disabled, onOpenFilters }: Props) => {
+export const SearchInput = ({ value, disabled, onChange, onOpenFilters }: Props) => {
   return (
     <div className="flex items-center bg-white gap-2 w-full">
       <div className="relative w-full rounded-md bg-gray-100">
         <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-500" />
-        <Input className="pl-8" placeholder="Search products" disabled={disabled} />
+        <Input
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          className="pl-8"
+          placeholder="Search products"
+          disabled={disabled}
+        />
       </div>
       <Button
         type="button"
