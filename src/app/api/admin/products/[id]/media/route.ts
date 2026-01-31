@@ -9,7 +9,7 @@ import Admin from '@/models/Admin';
    ADMIN AUTH
 =========================== */
 async function requireAdmin() {
-  const cookieStore = await cookies();
+  const cookieStore = await cookies(); // ❌ no await here
   const sessionId = cookieStore.get('admin_session')?.value;
 
   if (!sessionId) return null;
@@ -21,15 +21,15 @@ async function requireAdmin() {
 
 /* ===========================
    POST /api/admin/products/[id]/media
+   (Typed Routes compatible)
 =========================== */
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
-  const admin = await requireAdmin();
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params; // ✅ await params
 
+  const admin = await requireAdmin();
   if (!admin || !admin.isActive || admin.role !== 'admin') {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
-
-  const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ message: 'Invalid product id' }, { status: 400 });
