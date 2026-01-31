@@ -40,8 +40,6 @@ const NavbarItem = ({ href, children, isActive }: NavbarItemProps) => {
 const navbarItems = [
   { href: '/', children: 'Home' },
   { href: '/about', children: 'About' },
-  { href: '/Blog', children: 'Blog' },
-  { href: '/orders', children: 'Orders' },
   { href: '/contact', children: 'Contact' },
 ];
 
@@ -66,37 +64,6 @@ export const Navbar = () => {
         ))}
         <CartIcon />
       </div>
-
-      {/* {session.data?.user ? (
-        <div className="hidden lg:flex">
-          <Button
-            asChild
-            className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-black text-white hover:bg-pink-400 hover:text-black transition-colors text-lg"
-          >
-            <Link href="/admin">Dashboard</Link>
-          </Button>
-        </div>
-      ) : (
-        <div className="hidden lg:flex">
-          <Button
-            asChild
-            variant="secondary"
-            className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-white hover:bg-pink-400 transition-colors text-lg"
-          >
-            <Link prefetch href="/sign-in">
-              Login
-            </Link>
-          </Button>
-          <Button
-            asChild
-            className="border-l border-t-0 border-b-0 border-r-0 px-12 h-full rounded-none bg-black text-white hover:bg-pink-400 hover:text-black transition-colors text-lg"
-          >
-            <Link prefetch href="/sign-up">
-              Start Selling
-            </Link>
-          </Button>
-        </div>
-      )} */}
 
       <div className="flex lg:hidden items-center gap-2 pr-2">
         <CartIcon />

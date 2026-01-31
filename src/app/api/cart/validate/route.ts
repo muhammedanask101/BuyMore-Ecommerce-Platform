@@ -4,7 +4,7 @@ import Product from '@/models/Product';
 
 type CartItemInput = {
   productId: string;
-  variantId?: string;
+  size?: string;
   quantity: number;
 };
 
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         name: 'Product not found',
         price: 0,
         quantity: item.quantity,
-        variantId: item.variantId ?? null,
+        size: item.size ?? null,
         subtotal: 0,
         inStock: false,
       });
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       name: product.name,
       price: product.price,
       quantity: item.quantity,
-      variantId: item.variantId ?? null,
+      size: item.size ?? null,
       subtotal,
       inStock,
     });

@@ -1,8 +1,7 @@
 export type CartItem = {
   productId: string;
-  variantId?: string;
   quantity: number;
-  size?: 'XS' | 'S' | 'M' | 'L' | 'XL';
+  size?: string;
 };
 
 export type CartState = {

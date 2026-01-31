@@ -2,7 +2,7 @@ type WhatsAppItem = {
   name: string;
   price: number;
   quantity: number;
-  variantId?: string | null;
+  size?: string | null;
 };
 
 type WhatsAppOrder = {
@@ -26,8 +26,8 @@ export function buildWhatsAppMessage(order: WhatsAppOrder) {
   message += `*Items Ordered*\n`;
   order.items.forEach((item, index) => {
     message += `${index + 1}. ${item.name}\n`;
-    if (item.variantId) {
-      message += `   Size: ${item.variantId}\n`;
+    if (item.size) {
+      message += `   Size: ${item.size}\n`;
     }
     message += `   ₹${item.price} x ${item.quantity} = ₹${item.price * item.quantity}\n`;
   });

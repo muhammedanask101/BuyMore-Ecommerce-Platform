@@ -11,6 +11,8 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const adminPhone = normalizeIndianPhone(process.env.NEXT_PUBLIC_ADMIN_WHATSAPP!);
+
   const [address, setAddress] = useState<ShippingAddress>({
     name: '',
     phone: '',
@@ -41,6 +43,7 @@ export default function CheckoutPage() {
 
       if (error) {
         setError(error);
+        setLoading(false);
         return;
       }
 
@@ -53,7 +56,7 @@ export default function CheckoutPage() {
           items: cart.items.map((i) => ({
             productId: i.productId,
             quantity: i.quantity,
-            variantId: i.size ?? undefined,
+            size: i.size ?? undefined,
           })),
         }),
       });
@@ -77,7 +80,6 @@ export default function CheckoutPage() {
       };
 
       const message = buildWhatsAppMessage(orderPayload);
-      const adminPhone = normalizeIndianPhone(process.env.NEXT_PUBLIC_ADMIN_WHATSAPP!);
       const whatsappUrl = getWhatsAppUrl(adminPhone, message);
 
       window.location.href = whatsappUrl;
@@ -150,7 +152,7 @@ export default function CheckoutPage() {
       <button
         onClick={handlePlaceOrder}
         disabled={loading}
-        className="w-full bg-black text-white py-3 rounded-lg font-medium disabled:opacity-50"
+        className="w-full bg-black text-white hover:bg-white hover:text-green-600 hover:font-extrabold hover:border-2 hover:border-black py-3 rounded-lg font-medium disabled:opacity-50"
       >
         {loading ? 'Preparing WhatsApp…' : 'Order on WhatsApp'}
       </button>

@@ -1,3 +1,6 @@
+import Link from 'next/link';
+import { UserCog } from 'lucide-react';
+
 export const Footer = () => {
   return (
     <footer className="bg-black text-white border-t border-white/10">
@@ -10,18 +13,10 @@ export const Footer = () => {
 
           <div className="flex gap-6 text-sm font-medium text-white/80">
             <a href="/blog" className="hover:text-white transition">
-              Blog
+              About
             </a>
             <a href="/contact" className="hover:text-white transition">
               Contact
-            </a>
-            <a
-              href="https://www.google.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition"
-            >
-              Community
             </a>
           </div>
         </div>
@@ -30,7 +25,16 @@ export const Footer = () => {
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-xs text-white/60">
           <p>© {new Date().getFullYear()} Kapithan. All rights reserved.</p>
-          <p className="italic">Built with care • Delivering smiles</p>
+          <div className="flex items-center md:gap-3">
+            <Link
+              href="/admin"
+              aria-label="Admin login"
+              className="opacity-60 hover:opacity-100 transition"
+            >
+              <UserCog className="h-4 w-4" />
+            </Link>
+            <p className="italic">Built with care • Delivering smiles</p>
+          </div>
         </div>
       </div>
     </footer>
