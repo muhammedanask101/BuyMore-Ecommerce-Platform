@@ -30,15 +30,31 @@ export const SearchInput = ({ disabled, onOpenFilters }: Props) => {
 
 export const SearchInputSkeleton = () => {
   return (
-    <div
-      className="px-4 lg:px-12 py-8 border-b flex flex-col gap-4 w-full"
-      style={{
-        backgroundColor: '#F5F5F5',
-      }}
-    >
-      <SearchInput disabled />
-      <div className="hidden lg:block">
-        ,<div className="h-11"></div>
+    <div className="px-4 sm:px-6 lg:px-12 py-4 border-b bg-white">
+      <div className="flex items-center gap-2 w-full">
+        <div className="relative w-full">
+          <div
+            className="
+              h-10
+              w-full
+              rounded-md
+              bg-gray-100
+              animate-pulse
+            "
+          />
+        </div>
+
+        <div
+          className="
+            h-9 w-9
+            shrink-0
+            rounded-md
+            border border-black/20
+            bg-white
+            animate-pulse
+            lg:hidden
+          "
+        />
       </div>
     </div>
   );

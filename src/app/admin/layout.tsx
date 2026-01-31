@@ -36,7 +36,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   await requireAdmin();
 
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <div className="min-h-screen bg-neutral-100 overflow-x-hidden">
       <div className="flex min-h-screen">
         {/* SIDEBAR (DESKTOP) */}
         <aside className="hidden lg:flex w-64 flex-col border-r-4 border-black bg-white">
@@ -49,9 +49,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Nav href="/admin">Dashboard</Nav>
             <Nav href="/admin/products">Products</Nav>
             <Nav href="/admin/media">Media</Nav>
-            <Nav href="/admin/orders">Orders</Nav>
-            <Nav href="/admin/analytics/payments">Analytics</Nav>
-            <Nav href="/admin/settings">Settings</Nav>
           </nav>
 
           <form action="/api/admin/logout" method="POST" className="p-4 border-t-4 border-black">
@@ -74,14 +71,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </aside>
 
         {/* MAIN CONTENT */}
-        <main className="flex-1 p-6 lg:p-10">
+        <main className="flex-1 p-6 lg:p-10 overflow-x-hidden">
           <div className="max-w-6xl mx-auto">
             {/* MOBILE HEADER */}
-            <div className="lg:hidden mb-6 border-4 border-black bg-white p-4 flex justify-between items-center">
+            <div
+              className="lg:hidden mb-6 border-4 border-black bg-white p-4 flex justify-between items-center max-w-full"
+              style={{ boxSizing: 'border-box' }}
+            >
               <span className="font-extrabold">Admin</span>
-              <Link href="/admin/products" className="underline font-medium">
-                Menu →
-              </Link>
             </div>
 
             {children}

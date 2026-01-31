@@ -98,7 +98,7 @@ export const ProductListView = ({ narrowView, sort, minPrice, maxPrice }: Props)
   }
 
   return (
-    <div className="px-4 lg:px-12 py-8 flex flex-col gap-6">
+    <div className="px-4 lg:px-12 pt-4 pb-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <p className="text-2xl font-medium">Curated for you</p>
       </div>

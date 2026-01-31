@@ -15,42 +15,49 @@ export default function Home() {
 
   return (
     <>
-      {showFilters && (
+      <div
+        className={`
+    fixed inset-0 z-50 lg:hidden
+    transition-opacity duration-200 ease-out
+    ${showFilters ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
+    bg-black/40
+  `}
+        onClick={() => setShowFilters(false)}
+      >
         <div
-          className="fixed inset-0 z-50 bg-black/40 lg:hidden transition-opacity duration-200 ease-out"
-          onClick={() => setShowFilters(false)}
+          className={`
+      absolute right-0 top-0 h-full w-[85%] max-w-sm
+      bg-white p-6 overflow-y-auto
+      transition-all duration-200 ease-out
+      ${showFilters ? 'opacity-100' : 'opacity-0'}
+    `}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div
-            className="absolute right-0 top-0 h-full w-[85%] max-w-sm bg-white p-6 overflow-y-auto
-             transition-all duration-200 ease-out"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-lg font-semibold">Filters</p>
-              <button onClick={() => setShowFilters(false)} className="text-sm font-medium">
-                Close
-              </button>
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-lg font-semibold">Filters</p>
+            <button onClick={() => setShowFilters(false)} className="text-sm font-medium">
+              Close
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <p className="text-base font-medium mb-3">Sort by editor&apos;s choice</p>
+              <ProductSort value={sort} onChange={setSort} />
             </div>
 
-            <div className="space-y-6">
-              <div>
-                <p className="text-base font-medium mb-3">Sort by editor&apos;s choice</p>
-                <ProductSort value={sort} onChange={setSort} />
-              </div>
-
-              <div>
-                <p className="text-base font-medium mb-3">Sort by price</p>
-                <PriceFilter
-                  minPrice={minPrice}
-                  maxPrice={maxPrice}
-                  onMinPriceChange={setMinPrice}
-                  onMaxPriceChange={setMaxPrice}
-                />
-              </div>
+            <div>
+              <p className="text-base font-medium mb-3">Sort by price</p>
+              <PriceFilter
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                onMinPriceChange={setMinPrice}
+                onMaxPriceChange={setMaxPrice}
+              />
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       <main className="bg-gray-100">
         <div className="px-4 sm:px-6 lg:px-12 py-4 border-b-2 bg-white">
