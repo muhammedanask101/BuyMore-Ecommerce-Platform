@@ -17,11 +17,12 @@ export default function Home() {
     <>
       {showFilters && (
         <div
-          className="fixed inset-0 z-50 bg-black/40 lg:hidden"
+          className="fixed inset-0 z-50 bg-black/40 lg:hidden transition-opacity duration-200 ease-out"
           onClick={() => setShowFilters(false)}
         >
           <div
-            className="absolute right-0 top-0 h-full w-[85%] max-w-sm bg-white p-6 overflow-y-auto"
+            className="absolute right-0 top-0 h-full w-[85%] max-w-sm bg-white p-6 overflow-y-auto
+             transition-all duration-200 ease-out"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
@@ -54,7 +55,6 @@ export default function Home() {
       <main className="bg-gray-100">
         <div className="px-4 sm:px-6 lg:px-12 py-4 border-b-2 bg-white">
           <div className="flex items-center gap-3">
-            {/* Search */}
             <div className="flex-1 bg-gray-100 rounded-md">
               <Suspense fallback={<SearchInputSkeleton />}>
                 <SearchInput onOpenFilters={() => setShowFilters(true)} />
