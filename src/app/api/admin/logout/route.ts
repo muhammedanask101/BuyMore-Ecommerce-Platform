@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 
-function logoutResponse() {
-  const res = NextResponse.redirect(
-    new URL('/admin-login', process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000')
-  );
+export async function POST() {
+  const res = NextResponse.redirect(new URL('/admin-login', process.env.NEXT_PUBLIC_BASE_URL!));
 
   res.cookies.set({
     name: 'admin_session',
@@ -16,12 +14,4 @@ function logoutResponse() {
   });
 
   return res;
-}
-
-export async function POST() {
-  return logoutResponse();
-}
-
-export async function GET() {
-  return logoutResponse();
 }
