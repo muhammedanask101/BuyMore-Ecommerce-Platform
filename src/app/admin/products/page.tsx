@@ -55,15 +55,33 @@ export default async function AdminProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center border-4 border-black bg-white p-6">
-        <h1 className="text-2xl font-extrabold">Products</h1>
-
+      <div className="border-4 border-black bg-white p-6 space-y-4">
+        {/* Back row */}
         <Link
-          href="/admin/products/new"
-          className="border-2 border-black px-4 py-2 bg-black text-white hover:bg-white hover:text-black transition"
+          href="/admin"
+          className="inline-flex items-center gap-2 text-sm font-medium underline lg:hidden"
         >
-          + New Product
+          ← Back
         </Link>
+
+        {/* Title + action row */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-extrabold">Products</h1>
+
+          <Link
+            href="/admin/products/new"
+            className="
+        border-2 border-black
+        px-4 py-2
+        bg-black text-white
+        text-sm font-medium
+        hover:bg-white hover:text-black
+        transition
+      "
+          >
+            + New Product
+          </Link>
+        </div>
       </div>
 
       <div className="border-4 border-black bg-white overflow-x-auto">

@@ -9,9 +9,8 @@ export default function NewProductPage() {
   const router = useRouter();
 
   const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
   const [price, setPrice] = useState<number>(0);
-  const [stock, setStock] = useState<number>(0);
+  const [stock, setStock] = useState<number | ''>('');
   const [status, setStatus] = useState<ProductStatus>('draft');
   const [creating, setCreating] = useState(false);
 
@@ -19,14 +18,15 @@ export default function NewProductPage() {
     e.preventDefault();
     setCreating(true);
 
+    const safeStock = typeof stock === 'number' && stock > 0 ? stock : 1;
+
     const res = await fetch('/api/admin/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name,
-        slug,
         price,
-        stock,
+        stock: safeStock,
         status,
       }),
     });
@@ -45,6 +45,10 @@ export default function NewProductPage() {
 
   return (
     <div className="max-w-2xl">
+      {/* BACK BUTTON */}
+      <button type="button" onClick={() => router.back()} className="text-sm underline">
+        ← Back
+      </button>
       <form onSubmit={handleSubmit} className="border-4 border-black bg-white p-6 space-y-4">
         <h1 className="text-2xl font-extrabold">New Product</h1>
         <p className="text-sm opacity-70">Create the product first, then add images and details</p>
@@ -57,33 +61,28 @@ export default function NewProductPage() {
           required
         />
 
-        <input
-          className="border-2 border-black px-3 py-2 w-full"
-          placeholder="Slug (URL)"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          required
-        />
-
         <div className="grid grid-cols-2 gap-4">
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             className="border-2 border-black px-3 py-2"
             placeholder="Price"
-            value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
-            min={0}
-            required
+            value={price || ''}
+            onChange={(e) => setPrice(Number(e.target.value) || 0)}
           />
 
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             className="border-2 border-black px-3 py-2"
-            placeholder="Stock"
+            placeholder="Stock (default 1)"
             value={stock}
-            onChange={(e) => setStock(Number(e.target.value))}
-            min={0}
-            required
+            onChange={(e) => {
+              const v = e.target.value;
+              setStock(v === '' ? '' : Number(v));
+            }}
           />
         </div>
 

@@ -72,7 +72,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   } = { ...body };
 
   /* ---------- AUTO SLUG ---------- */
-  if (!updates.slug && updates.name) {
+  if ((!updates.slug || updates.slug.trim() === '') && updates.name) {
     updates.slug = slugify(updates.name, {
       lower: true,
       strict: true,

@@ -167,137 +167,159 @@ export default function EditProductClient({ id }: { id: string }) {
      RENDER
   ============================ */
   return (
-    <div className="space-y-10">
-      {/* PRODUCT FORM */}
-      <form
-        onSubmit={handleSave}
-        className="border-4 border-black bg-white p-6 space-y-4 max-w-2xl"
-      >
-        <h1 className="text-2xl font-extrabold">Edit Product</h1>
-
-        <input
-          className="border-2 border-black px-3 py-2 w-full"
-          value={product.name}
-          onChange={(e) => setProduct({ ...product, name: e.target.value })}
-          placeholder="Name"
-        />
-
-        <input
-          className="border-2 border-black px-3 py-2 w-full"
-          value={product.slug || ''}
-          onChange={(e) => setProduct({ ...product, slug: e.target.value })}
-          placeholder="Slug (auto if empty)"
-        />
-
-        <textarea
-          className="border-2 border-black px-3 py-2 w-full min-h-[120px]"
-          value={product.description || ''}
-          onChange={(e) => setProduct({ ...product, description: e.target.value })}
-          placeholder="Description"
-        />
-
-        <input
-          className="border-2 border-black px-3 py-2 w-full"
-          value={product.shortDescription || ''}
-          onChange={(e) => setProduct({ ...product, shortDescription: e.target.value })}
-          placeholder="Short description (auto if empty)"
-        />
-
-        <input
-          className="border-2 border-black px-3 py-2 w-full"
-          value={product.tags?.join(', ') || ''}
-          onChange={(e) =>
-            setProduct({
-              ...product,
-              tags: e.target.value.split(',').map((t) => t.trim()),
-            })
-          }
-          placeholder="Tags (comma separated)"
-        />
-
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={!!product.isFeatured}
-            onChange={(e) => setProduct({ ...product, isFeatured: e.target.checked })}
-          />
-          Featured product
-        </label>
-
-        <div className="grid grid-cols-2 gap-4">
-          <input
-            type="number"
-            className="border-2 border-black px-3 py-2"
-            value={product.price}
-            onChange={(e) => setProduct({ ...product, price: Number(e.target.value) })}
-            placeholder="Price"
-          />
-
-          <input
-            type="number"
-            className="border-2 border-black px-3 py-2"
-            value={product.stock}
-            onChange={(e) => setProduct({ ...product, stock: Number(e.target.value) })}
-            placeholder="Stock"
-          />
-        </div>
-
-        <select
-          className="border-2 border-black px-3 py-2"
-          value={product.status}
-          onChange={(e) =>
-            setProduct({
-              ...product,
-              status: e.target.value as Product['status'],
-            })
-          }
+    <>
+      <button type="button" onClick={() => history.back()} className="text-sm underline">
+        ← Back
+      </button>
+      <div className="space-y-10">
+        <form
+          onSubmit={handleSave}
+          className="border-4 border-black bg-white p-6 space-y-4 max-w-2xl"
         >
-          <option value="draft">Draft</option>
-          <option value="active">Active</option>
-          <option value="archived">Archived</option>
-        </select>
+          <h1 className="text-2xl font-extrabold">Edit Product</h1>
 
-        <button disabled={saving} className="border-2 border-black bg-black text-white px-4 py-2">
-          {saving ? 'Saving…' : 'Save Product'}
-        </button>
-      </form>
+          <input
+            className="border-2 border-black px-3 py-2 w-full"
+            value={product.name}
+            onChange={(e) => setProduct({ ...product, name: e.target.value })}
+            placeholder="Name"
+          />
 
-      {/* MEDIA MANAGER */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-extrabold">Media</h2>
+          <input
+            className="border-2 border-black px-3 py-2 w-full"
+            value={product.slug || ''}
+            onChange={(e) => setProduct({ ...product, slug: e.target.value })}
+            placeholder="Slug (auto if empty)"
+          />
 
-        <div className="border-4 border-black bg-white p-4 space-y-3">
-          <input ref={fileRef} type="file" accept="image/*" />
-          <button
-            type="button"
-            disabled={uploading}
-            onClick={handleUpload}
-            className="border-2 border-black bg-black text-white px-4 py-2"
+          <textarea
+            className="border-2 border-black px-3 py-2 w-full min-h-[120px]"
+            value={product.description || ''}
+            onChange={(e) => setProduct({ ...product, description: e.target.value })}
+            placeholder="Description"
+          />
+
+          <input
+            className="border-2 border-black px-3 py-2 w-full"
+            value={product.shortDescription || ''}
+            onChange={(e) => setProduct({ ...product, shortDescription: e.target.value })}
+            placeholder="Short description (auto if empty)"
+          />
+
+          <input
+            className="border-2 border-black px-3 py-2 w-full"
+            value={product.tags?.join(', ') || ''}
+            onChange={(e) =>
+              setProduct({
+                ...product,
+                tags: e.target.value.split(',').map((t) => t.trim()),
+              })
+            }
+            placeholder="Tags (comma separated)"
+          />
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={!!product.isFeatured}
+              onChange={(e) => setProduct({ ...product, isFeatured: e.target.checked })}
+            />
+            Featured product
+          </label>
+
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              type="number"
+              className="border-2 border-black px-3 py-2"
+              value={product.price}
+              onChange={(e) => setProduct({ ...product, price: Number(e.target.value) })}
+              placeholder="Price"
+            />
+
+            <input
+              type="number"
+              className="border-2 border-black px-3 py-2"
+              value={product.stock}
+              onChange={(e) => setProduct({ ...product, stock: Number(e.target.value) })}
+              placeholder="Stock"
+            />
+          </div>
+
+          <select
+            className="border-2 border-black px-3 py-2"
+            value={product.status}
+            onChange={(e) =>
+              setProduct({
+                ...product,
+                status: e.target.value as Product['status'],
+              })
+            }
           >
-            {uploading ? 'Uploading…' : 'Upload Image'}
-          </button>
-        </div>
+            <option value="draft">Draft</option>
+            <option value="active">Active</option>
+            <option value="archived">Archived</option>
+          </select>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {media.map((m) => (
-            <div key={m._id} className="relative border-4 border-black bg-white">
-              <Image
-                src={m.url}
-                alt=""
-                width={300}
-                height={300}
-                className="object-cover aspect-square"
+          <button disabled={saving} className="border-2 border-black bg-black text-white px-4 py-2">
+            {saving ? 'Saving…' : 'Save Product'}
+          </button>
+        </form>
+
+        {/* MEDIA MANAGER */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-extrabold">Media</h2>
+
+          <div className="border-4 border-black bg-white p-4 space-y-3">
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" />
+
+            <label
+              className={`
+    inline-flex items-center justify-center
+    border-2 border-black
+    px-4 py-2
+    font-medium cursor-pointer
+    transition
+    ${
+      uploading
+        ? 'bg-neutral-200 text-neutral-600 cursor-not-allowed'
+        : 'bg-white hover:bg-black hover:text-white'
+    }
+  `}
+            >
+              {uploading ? 'Uploading…' : 'Choose image'}
+
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                onChange={() => handleUpload()}
+                disabled={uploading}
+                className="hidden"
               />
-              <button
-                onClick={() => handleDelete(m._id)}
-                className="absolute top-1 right-1 border-2 border-black bg-white px-2 py-1 text-xs font-bold hover:bg-black hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-    </div>
+            </label>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {media.map((m) => (
+              <div key={m._id} className="relative border-4 border-black bg-white">
+                <Image
+                  src={m.url}
+                  alt=""
+                  width={300}
+                  height={300}
+                  className="object-cover aspect-square"
+                />
+                <button
+                  onClick={() => handleDelete(m._id)}
+                  className="absolute top-1 right-1 border-2 border-black bg-white px-2 py-1 text-xs font-bold hover:bg-black hover:text-white"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </>
   );
 }

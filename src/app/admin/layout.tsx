@@ -73,12 +73,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {/* MAIN CONTENT */}
         <main className="flex-1 p-6 lg:p-10 overflow-x-hidden">
           <div className="max-w-6xl mx-auto">
-            {/* MOBILE HEADER */}
-            <div
-              className="lg:hidden mb-6 border-4 border-black bg-white p-4 flex justify-between items-center max-w-full"
-              style={{ boxSizing: 'border-box' }}
-            >
-              <span className="font-extrabold">Admin</span>
+            <div className="lg:hidden mb-6 border-4 border-black bg-white p-4 flex justify-between items-center">
+              <span className="font-extrabold text-lg">Admin</span>
+
+              <form action="/api/admin/logout" method="POST">
+                <button
+                  type="submit"
+                  className="border-2 border-black px-3 py-1 text-sm font-medium hover:bg-black hover:text-white transition"
+                >
+                  Logout
+                </button>
+              </form>
             </div>
 
             {children}
