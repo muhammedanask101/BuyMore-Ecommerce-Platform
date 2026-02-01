@@ -24,14 +24,14 @@ export const ProductCard = ({ product }: Props) => {
     <>
       <div className="h-full flex flex-col border-2 border-black bg-white overflow-hidden transition-shadow hover:shadow-[4px_4px_0_0_#000]">
         <div className="relative aspect-square bg-neutral-100">
-          <Link href={`/products/${slug}`}>
+          <Link href={`/products/${slug}`} className="relative block w-full h-full">
             <Image
               src={primaryImage || '/placeholder.png'}
               alt={primaryImageAlt || name}
               fill
               sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
               className="object-cover"
-              priority={false}
+              priority
             />
           </Link>
 

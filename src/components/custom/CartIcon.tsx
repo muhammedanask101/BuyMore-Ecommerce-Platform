@@ -11,13 +11,14 @@ function getCartCount(): number {
 }
 
 export function CartIcon() {
-  // ✅ Lazy initialization (runs once, not in effect)
-  const [count, setCount] = useState<number>(() => getCartCount());
+  const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
     function handleCartUpdate() {
       setCount(getCartCount());
     }
+
+    handleCartUpdate();
 
     // Subscribe only
     window.addEventListener('cart-updated', handleCartUpdate);
@@ -33,7 +34,7 @@ export function CartIcon() {
     <Link href="/cart" aria-label="View cart" className="relative flex items-center justify-center">
       <ShoppingCartIcon className="size-6" />
 
-      {count > 0 && (
+      {count !== null && count > 0 && (
         <span
           className="
             absolute -top-2 -right-2

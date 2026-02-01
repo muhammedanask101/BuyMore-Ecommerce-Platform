@@ -19,16 +19,31 @@ export default function Home() {
   return (
     <>
       <Sheet open={showFilters} onOpenChange={setShowFilters}>
-        <SheetContent side="right" className="p-0">
+        <SheetContent
+          side="right"
+          className="
+                p-0
+                lg:hidden
+                w-[85vw]
+                max-w-sm
+                overflow-x-hidden
+              "
+        >
           <SheetHeader className="p-4 border-b">
             <SheetTitle>Filters</SheetTitle>
           </SheetHeader>
 
-          <ScrollArea className="h-full p-6">
+          <ScrollArea className="h-full w-full p-6 overflow-x-hidden">
             <div className="space-y-6">
               <div>
                 <p className="text-base font-medium mb-3">Sort by editor&apos;s choice</p>
-                <ProductSort value={sort} onChange={setSort} />
+                <ProductSort
+                  value={sort}
+                  onChange={(value) => {
+                    setSort(value);
+                    setShowFilters(false);
+                  }}
+                />
               </div>
 
               <div>

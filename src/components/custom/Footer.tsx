@@ -25,7 +25,7 @@ export const Footer = () => {
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-xs text-white/60">
           <p>© {new Date().getFullYear()} Kapithan. All rights reserved.</p>
-          <div className="flex items-center md:gap-3">
+          <div className="flex items-center gap-1 md:gap-3">
             <Link
               href="/admin"
               aria-label="Admin login"
