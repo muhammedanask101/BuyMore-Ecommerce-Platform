@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export type ProductSortValue = 'curated' | 'trending' | 'hot_and_new';
+export type ProductSortValue = 'curated' | 'hot_and_new';
 
 interface Props {
   value: ProductSortValue;
@@ -15,10 +15,6 @@ export const ProductSort = ({ value, onChange }: Props) => {
     <div className="flex flex-wrap items-center gap-2">
       <SortButton active={value === 'curated'} onClick={() => onChange('curated')}>
         Curated
-      </SortButton>
-
-      <SortButton active={value === 'trending'} onClick={() => onChange('trending')}>
-        Trending
       </SortButton>
 
       <SortButton active={value === 'hot_and_new'} onClick={() => onChange('hot_and_new')}>

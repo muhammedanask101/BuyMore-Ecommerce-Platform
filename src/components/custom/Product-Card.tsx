@@ -13,10 +13,7 @@ interface Props {
 }
 
 export const ProductCard = ({ product }: Props) => {
-  const { slug, name, price, primaryImage, primaryImageAlt, rating } = product;
-
-  const reviewRating = rating?.average ?? 0;
-  const reviewCount = rating?.count ?? 0;
+  const { slug, name, price, primaryImage, primaryImageAlt } = product;
 
   const { showAddedToCart } = useToast();
 
@@ -57,12 +54,10 @@ export const ProductCard = ({ product }: Props) => {
           <div className="flex flex-col gap-3 p-4 border-t-2 border-black flex-1">
             <h2 className="text-lg font-medium leading-snug line-clamp-3">{name}</h2>
 
-            {reviewCount > 0 && (
-              <div className="flex items-center gap-1 text-sm font-medium">
-                <StarIcon className="size-3.5 fill-black" />
-                <span>
-                  {reviewRating} ({reviewCount})
-                </span>
+            {product.isFeatured && (
+              <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide text-black">
+                <StarIcon className="size-3 fill-black" />
+                <span className="font-medium">Featured</span>
               </div>
             )}
           </div>
