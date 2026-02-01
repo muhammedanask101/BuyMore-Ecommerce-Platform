@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import connectDB from '@/lib/db';
 import Admin from '@/models/Admin';
+import AdminBFCacheGuard from '@/components/custom/AdminBFCacheGuard';
 
 /* ============================
    SERVER AUTH (SECURE)
@@ -72,6 +73,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
         {/* MAIN CONTENT */}
         <main className="flex-1 p-6 lg:p-10 overflow-x-hidden">
+          <AdminBFCacheGuard />
           <div className="max-w-6xl mx-auto">
             <div className="lg:hidden mb-6 border-4 border-black bg-white p-4 flex justify-between items-center">
               <span className="font-extrabold text-lg">Admin</span>
