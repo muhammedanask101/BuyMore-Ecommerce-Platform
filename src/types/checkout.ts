@@ -6,5 +6,6 @@ export type ShippingAddress = {
   city: string;
   state: string;
   postalCode: string;
+  landmark?: string;
   country?: string;
 };

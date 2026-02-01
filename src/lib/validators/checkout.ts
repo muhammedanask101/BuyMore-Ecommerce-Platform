@@ -56,6 +56,7 @@ export function validateCheckoutAddress(address: ShippingAddress): {
       city: address.city.trim(),
       state: address.state.trim(),
       postalCode: address.postalCode.trim(),
+      landmark: address.landmark?.trim() || '',
       country: address.country || 'India',
     },
   };

@@ -70,10 +70,13 @@ export default function CheckoutPage() {
       const orderPayload = {
         customer: {
           name: validatedAddress.name,
-          phone: validatedAddress.phone, // already normalized
-          address: `${validatedAddress.addressLine1}${
-            validatedAddress.addressLine2 ? `, ${validatedAddress.addressLine2}` : ''
-          }, ${validatedAddress.city}, ${validatedAddress.state} - ${validatedAddress.postalCode}`,
+          phone: validatedAddress.phone,
+          addressLine1: validatedAddress.addressLine1,
+          addressLine2: validatedAddress.addressLine2,
+          landmark: validatedAddress.landmark,
+          city: validatedAddress.city,
+          state: validatedAddress.state,
+          postalCode: validatedAddress.postalCode,
         },
         items,
         total,
@@ -145,6 +148,13 @@ export default function CheckoutPage() {
           placeholder="Postal code"
           value={address.postalCode}
           onChange={(e) => updateField('postalCode', e.target.value)}
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <input
+          placeholder="Landmark (optional)"
+          value={address.landmark ?? ''}
+          onChange={(e) => updateField('landmark', e.target.value)}
           className="w-full border rounded px-3 py-2"
         />
       </div>

@@ -9,7 +9,12 @@ type WhatsAppOrder = {
   customer: {
     name: string;
     phone: string;
-    address: string;
+    addressLine1: string;
+    addressLine2?: string;
+    landmark?: string;
+    city: string;
+    state: string;
+    postalCode: string;
   };
   items: WhatsAppItem[];
   total: number;
@@ -21,7 +26,14 @@ export function buildWhatsAppMessage(order: WhatsAppOrder) {
   message += `*Customer Details*\n`;
   message += `Name: ${order.customer.name}\n`;
   message += `Phone: ${order.customer.phone}\n`;
-  message += `Address: ${order.customer.address}\n\n`;
+  const addressLines = [
+    order.customer.addressLine1,
+    order.customer.addressLine2,
+    order.customer.landmark ? `Landmark: ${order.customer.landmark}` : null,
+    `${order.customer.city}, ${order.customer.state} - ${order.customer.postalCode}`,
+  ].filter((line): line is string => Boolean(line));
+
+  message += `Address:\n${addressLines.join('\n')}\n\n`;
 
   message += `*Items Ordered*\n`;
   order.items.forEach((item, index) => {

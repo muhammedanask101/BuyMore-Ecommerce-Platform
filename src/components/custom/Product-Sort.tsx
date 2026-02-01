@@ -12,7 +12,7 @@ interface Props {
 
 export const ProductSort = ({ value, onChange }: Props) => {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <SortButton active={value === 'curated'} onClick={() => onChange('curated')}>
         Curated
       </SortButton>
