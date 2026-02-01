@@ -77,7 +77,7 @@ export default function NewProductPage() {
             inputMode="numeric"
             pattern="[0-9]*"
             className="border-2 border-black px-3 py-2"
-            placeholder="Stock (default 1)"
+            placeholder="Stock"
             value={stock}
             onChange={(e) => {
               const v = e.target.value;

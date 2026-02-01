@@ -2,34 +2,38 @@ import connectDB from '@/lib/db';
 import Admin from '@/models/Admin';
 
 async function seedAdmin() {
-  console.log('🚀 seed-admin started');
+  console.log('🚀 Seeding admin…');
+
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    console.error('❌ Missing environment variables');
+    console.error('Set ADMIN_EMAIL and ADMIN_PASSWORD');
+    process.exit(1);
+  }
 
   await connectDB();
 
-  const email = 'admin@kapithan.com';
-  const password = 'admin123'; // ❗ CHANGE AFTER FIRST LOGIN
-
-  // Check if admin already exists
-  const existing = await Admin.findOne({ email });
+  const existing = await Admin.findOne({ email: email.toLowerCase() });
 
   if (existing) {
-    console.log('❌ Admin already exists:', email);
+    console.log('ℹ️ Admin already exists:', email);
     process.exit(0);
   }
 
   const passwordHash = await Admin.hashPassword(password);
 
   const admin = await Admin.create({
-    email,
+    email: email.toLowerCase(),
     passwordHash,
     role: 'admin',
     isActive: true,
   });
 
-  console.log('✅ Admin seeded successfully');
+  console.log('✅ Admin created successfully');
   console.log('Email:', admin.email);
-  console.log('Password:', password);
-  console.log('⚠️ LOGIN AND CHANGE PASSWORD IMMEDIATELY');
+  console.log('⚠️ Change the password after first login');
 
   process.exit(0);
 }
