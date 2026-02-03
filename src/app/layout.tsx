@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Kapithan',
-  description: 'Kapithan Store',
+  title: 'BuyMore',
+  description: 'BuyMore Store',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

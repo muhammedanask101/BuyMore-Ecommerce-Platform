@@ -21,7 +21,7 @@ export function generateSEO({
   shortDescription?: string;
 }) {
   return {
-    title: `${name} | Kapithan`,
+    title: `${name} | BuyMore`,
     description: shortDescription,
   };
 }

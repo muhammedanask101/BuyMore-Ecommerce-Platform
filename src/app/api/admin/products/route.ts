@@ -79,7 +79,7 @@ export async function POST(req: Request) {
       : (body.tags ?? []);
 
   const seo = {
-    title: `${body.name} | Kapithan`,
+    title: `${body.name} | BuyMore`,
     description: shortDescription || description?.slice(0, 160),
   };
 

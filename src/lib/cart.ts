@@ -1,6 +1,6 @@
 import { CartState, CartItem } from '@/types/cart';
 
-const CART_KEY = 'kapithan_cart';
+const CART_KEY = 'buymore_cart';
 
 export function getCart(): CartState {
   if (typeof window === 'undefined') {

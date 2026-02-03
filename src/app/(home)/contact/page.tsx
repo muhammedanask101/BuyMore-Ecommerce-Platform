@@ -1,6 +1,6 @@
 export default function ContactPage() {
   return (
-    <main className="px-4 py-10 md:py-16 max-w-3xl mx-auto">
+    <main className="px-8 py-10 md:py-16 max-w-3xl mx-auto">
       {/* Heading */}
       <div className="mb-10">
         <h1 className="text-3xl font-bold mb-2">Contact Us</h1>
@@ -14,8 +14,8 @@ export default function ContactPage() {
         {/* Email */}
         <div>
           <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Email</p>
-          <a href="mailto:hello@kapithan.com" className="font-medium hover:underline">
-            hello@kapithan.com
+          <a href="mailto:officiallbuymorestore@gmail.com" className="font-medium hover:underline">
+            officialbuymorestore@gmail.com
           </a>
         </div>
 
@@ -23,7 +23,7 @@ export default function ContactPage() {
         <div>
           <p className="text-xs uppercase tracking-wide text-gray-500 mb-1">Phone</p>
           <a href="tel:+919876543210" className="font-medium hover:underline">
-            +91 98765 43210
+            +91 98472 41611
           </a>
         </div>
 

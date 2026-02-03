@@ -42,7 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {/* SIDEBAR (DESKTOP) */}
         <aside className="hidden lg:flex w-64 flex-col border-r-4 border-black bg-white">
           <div className="p-6 border-b-4 border-black">
-            <h1 className="text-2xl font-extrabold">Kapithan</h1>
+            <h1 className="text-2xl font-extrabold">BuyMore</h1>
             <p className="text-xs opacity-70">Admin Panel</p>
           </div>
 

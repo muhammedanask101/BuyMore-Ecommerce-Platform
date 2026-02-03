@@ -103,7 +103,7 @@ export async function generateMetadata({
     deletedAt: null,
   }).lean();
 
-  const title = product.seo?.title ?? `${product.name} | Kapithan`;
+  const title = product.seo?.title ?? `${product.name} | BuyMore`;
   const description =
     product.seo?.description ??
     product.shortDescription ??
@@ -156,11 +156,11 @@ function ProductJsonLd({ product }: { product: ProductPageDTO }) {
     sku: product._id,
     brand: {
       '@type': 'Brand',
-      name: 'Kapithan',
+      name: 'Buymore',
     },
     offers: {
       '@type': 'Offer',
-      url: `https://kapithan.com/products/${product.slug}`,
+      url: `https://buymore.in/products/${product.slug}`,
       priceCurrency: product.currency ?? 'INR',
       price: product.price,
       availability:

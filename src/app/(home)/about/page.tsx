@@ -1,12 +1,12 @@
 export default function AboutPage() {
   return (
-    <main className="px-4 py-10 md:py-16 max-w-4xl mx-auto">
+    <main className="px-8 py-10 md:py-16 max-w-4xl mx-auto">
       {/* HERO */}
       <section className="mb-12">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">About Kapithan</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-4">About BuyMore</h1>
         <p className="text-base md:text-lg text-gray-700 max-w-2xl">
-          Kapithan is a modern homegrown brand focused on thoughtful products, honest pricing, and a
-          shopping experience that feels human.
+          BuyMore is a modern homegrown brand focused on thoughtful products, honest pricing, and a
+          satisfactory shopping experience.
         </p>
       </section>
 
@@ -14,9 +14,9 @@ export default function AboutPage() {
       <section className="mb-12 border-2 border-black p-6 md:p-8">
         <h2 className="text-xl font-semibold mb-3">Our Story</h2>
         <p className="text-sm md:text-base text-gray-700 leading-relaxed">
-          Kapithan was created with a simple idea: selling products should feel personal, not
-          transactional. We believe every order represents trust, and we treat it that way — from
-          how we curate our products to how we communicate with our customers.
+          BuyMore was created with a simple idea: selling products should feel personal, not
+          transactional. We believe every order represents trust, and we treat it that way, from how
+          we curate our products to how we communicate with our customers.
         </p>
       </section>
 
@@ -41,9 +41,7 @@ export default function AboutPage() {
 
           <div className="border-2 border-black p-5">
             <h3 className="font-medium mb-2">Customer Respect</h3>
-            <p className="text-sm text-gray-700">
-              We value your time, privacy, and trust — always.
-            </p>
+            <p className="text-sm text-gray-700">We value your time, privacy, and trust, always.</p>
           </div>
         </div>
       </section>
@@ -51,8 +49,8 @@ export default function AboutPage() {
       {/* CTA */}
       <section className="border-t-2 border-black pt-8">
         <p className="text-sm text-gray-700 max-w-xl">
-          We’re continuously improving and expanding — and we’re grateful to everyone who chooses
-          Kapithan. If you have questions, feedback, or just want to say hello, we’d love to hear
+          We’re continuously improving and expanding and we’re grateful to everyone who chooses
+          BuyMore. If you have questions, feedback, or just want to say hello, we’d love to hear
           from you.
         </p>
       </section>
