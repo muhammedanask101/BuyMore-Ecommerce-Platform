@@ -5,8 +5,8 @@ export default function AboutPage() {
       <section className="mb-12">
         <h1 className="text-3xl md:text-4xl font-bold mb-4">About BuyMore</h1>
         <p className="text-base md:text-lg text-gray-700 max-w-2xl">
-          BuyMore is a modern e-commerce brand focused on thoughtful products, honest pricing, and a
-          satisfactory shopping experience.
+          BuyMore is a modern e-commerce platform focused on thoughtful products, honest pricing,
+          and a satisfactory shopping experience.
         </p>
       </section>
 
