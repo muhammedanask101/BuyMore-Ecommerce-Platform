@@ -62,30 +62,6 @@ Designed with strict server/client separation and modular architecture.
 
 ---
 
-## 📂 Project Structure
-
-app/
-├── products/[slug]
-├── admin/
-├── api/
-├── cart/
-├── checkout/
-└── layout.tsx
-
-lib/
-├── db.ts
-├── ratelimit.ts
-├── validators/
-├── models/
-└── utils/
-
-components/
-├── custom/
-└── ui/
-
-
----
-
 ## 🔐 Security Architecture
 
 - Server-only admin authentication
